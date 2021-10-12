@@ -12,7 +12,6 @@ import java.util.Map;
  * @create: 2019/9/22
  **/
 public interface ActivitiService {
-
     /**
      * 根据流程定义key启动流程实例
      * @param processModelKey
