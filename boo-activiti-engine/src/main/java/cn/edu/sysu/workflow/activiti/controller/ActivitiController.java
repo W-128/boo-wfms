@@ -1,7 +1,9 @@
 package cn.edu.sysu.workflow.activiti.controller;
 
 import com.alibaba.fastjson.JSON;
+import org.activiti.engine.RepositoryService;
 import org.activiti.engine.TaskService;
+import org.activiti.engine.repository.Deployment;
 import org.activiti.engine.runtime.ProcessInstance;
 import org.activiti.engine.task.Task;
 import org.slf4j.Logger;
@@ -33,6 +35,29 @@ public class ActivitiController {
 
     @Autowired
     private TaskService taskService;
+
+    @Autowired
+    private RepositoryService repositoryService;
+
+    /**
+     *部署流程定义
+     */
+    @RequestMapping(value = "/intDeploy", method = RequestMethod.GET)
+    public ResponseEntity<?> intDeploy() {
+        HashMap<String, String> response = new HashMap<>();
+
+        //部署流程
+        String r1 = "processes/online-shopping.bpmn20.xml";
+
+        Deployment deployment= repositoryService.createDeployment().addClasspathResource(r1).deploy();
+
+        response.put("status", "success");
+        response.put("message", "deploy process " + deployment.getName() + " success");
+        response.put("deploymentId", deployment.getId());
+        response.put("deploymentName", deployment.getName());
+        logger.info(response.toString());
+        return ResponseEntity.status(HttpStatus.OK).body(JSON.toJSONString(response));
+    }
 
     /**
      * 根据key启动流程

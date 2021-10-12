@@ -144,7 +144,7 @@ public class BooActivitiEngineApplicationTests {
 
         //完成第二步请求
         Task task2 = taskService.createTaskQuery().processInstanceId(processId).singleResult();
-        variables.put("pass", true);
+        variables.put("pass", 1);
         taskService.complete(task2.getId(), variables);
         System.out.println("完成数：" + historyService.createHistoricProcessInstanceQuery().finished().count());
     }
@@ -183,7 +183,7 @@ public class BooActivitiEngineApplicationTests {
 
         //完成第二步请求
         Task task2 = taskService.createTaskQuery().processInstanceId(processId).singleResult();
-        variables.put("pass", true);
+        variables.put("pass", 1);
         taskService.complete(task2.getId(), variables);
 
 
@@ -195,15 +195,17 @@ public class BooActivitiEngineApplicationTests {
     @Test
     public void testRecoverProcessDefinitionEntityTime() {
         //试图排除一切初始化工作
-        String modelTwo = "processes/2_model.bpmn20.xml";
-        DeploymentBuilder builder1 = repositoryService.createDeployment();
-        builder1.addClasspathResource(modelTwo);
-        builder1.deploy();
-        ProcessInstance pi = runtimeService.startProcessInstanceByKey("load-application");
+//        String modelTwo = "processes/2_model.bpmn20.xml";
+//        DeploymentBuilder builder1 = repositoryService.createDeployment();
+//        builder1.addClasspathResource(modelTwo);
+//        builder1.deploy();
+//        ProcessInstance pi = runtimeService.startProcessInstanceByKey("load-application");
 
         System.out.println("before recover");
         long startTime = System.currentTimeMillis();
-        ProcessInstance pi1 = runtimeService.startProcessInstanceById("online-shopping:1:4");
+        initDeploy();
+//        ProcessInstance pi1 = runtimeService.startProcessInstanceById("online-shopping:1:4");
+        ProcessInstance pi1 = runtimeService.startProcessInstanceByKey("online-shopping");
         long endTime = System.currentTimeMillis();
         System.out.println("recover: " + (endTime - startTime));
         System.out.println("processDefinitionId:" + pi1.getProcessDefinitionId());
@@ -211,13 +213,14 @@ public class BooActivitiEngineApplicationTests {
         System.out.println("after recover");
         //直接使用上面流程已经恢复的procssDefinition
         long startTime1 = System.currentTimeMillis();
-        ProcessInstance pi2 = runtimeService.startProcessInstanceById("online-shopping:1:4");
+        //ProcessInstance pi2 = runtimeService.startProcessInstanceById("online-shopping:1:4");
+        ProcessInstance pi2 = runtimeService.startProcessInstanceByKey("online-shopping");
         long endTime1 = System.currentTimeMillis();
         System.out.println("no recover: " + (endTime1 - startTime1));
         System.out.println("processDefinitionId:" + pi2.getProcessDefinitionId());
 
         long startTime2 = System.currentTimeMillis();
-        ProcessInstance pi3 = runtimeService.startProcessInstanceById("online-shopping:1:4");
+        ProcessInstance pi3 = runtimeService.startProcessInstanceByKey("online-shopping");
         long endTime2 = System.currentTimeMillis();
         System.out.println("no recover: " + (endTime2 - startTime2));//时间消耗大概是296ms；书本35页也有说到这种缓存带来的性能上的大提升
     }

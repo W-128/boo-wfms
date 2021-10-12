@@ -13,8 +13,8 @@ public class JedisPoolUtil {
     private JedisPoolUtil() {}
 
     private static volatile JedisPool jedisPool = null;
-
-    private static final String REDIS_HOST = "127.0.0.1";
+    //服务器ip
+    private static final String REDIS_HOST = "192.168.1.1";
 
     private static final int REDIS_PORT = 6379;
 
