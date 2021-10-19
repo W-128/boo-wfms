@@ -6,12 +6,7 @@ import org.activiti.engine.RepositoryService;
 import org.activiti.engine.RuntimeService;
 import org.activiti.engine.TaskService;
 import org.activiti.engine.impl.persistence.entity.ExecutionEntity;
-import org.activiti.engine.impl.persistence.entity.ProcessDefinitionEntity;
-import org.activiti.engine.impl.pvm.process.ActivityImpl;
-import org.activiti.engine.impl.pvm.process.TransitionImpl;
-import org.activiti.engine.repository.DeploymentBuilder;
 import org.activiti.engine.repository.ProcessDefinition;
-import org.activiti.engine.runtime.Execution;
 import org.activiti.engine.runtime.ProcessInstance;
 import org.activiti.engine.task.Task;
 import org.junit.Test;
@@ -20,9 +15,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
 
-import java.io.FileWriter;
-import java.io.IOException;
-import java.lang.instrument.Instrumentation;
 import java.util.*;
 
 @RunWith(SpringRunner.class)
@@ -63,7 +55,7 @@ public class BooActivitiEngineApplicationTests {
         System.out.println(count);
 
         String r1 = "processes/leave.bpmn20.xml";
-        String r2 = "processes/travel-booking-process.bpmn20.xml";
+        String r2 = "processes/travel-booking.bpmn20.xml";
 
         long startTime1 = System.currentTimeMillis();
         repositoryService.createDeployment().addClasspathResource(r2).deploy();

@@ -1,5 +1,6 @@
 package cn.edu.sysu.workflow.activiti.service;
 
+import org.activiti.engine.repository.Deployment;
 import org.activiti.engine.runtime.ProcessInstance;
 import org.activiti.engine.task.Task;
 
@@ -13,6 +14,12 @@ import java.util.Map;
  **/
 public interface ActivitiService {
 
+    /**
+     * 根据流程定义文件名部署流程定义
+     * @param processId
+     * @return
+     */
+    public Deployment initDeployByKey(String processName);
     /**
      * 根据流程定义key启动流程实例
      * @param processModelKey
@@ -51,6 +58,11 @@ public interface ActivitiService {
      */
     public Task getCurrentSingleTask(String processInstanceId);
 
+    /**
+     * 获取可执行的所有任务
+     * @return
+     */
+    public List<Task> getActiveTasks();
     /**
      * 认领任务
      * @param taskId
