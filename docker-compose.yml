@@ -1,0 +1,12 @@
+version: '3'
+services:
+  boo-eureka-server:
+    image: boo-eureka-server
+    ports:
+      - "10231:10231"
+  boo-activiti-engine:
+    image: boo-activiti-engine
+    ports:
+      - "10237:10237"
+    links:
+      - boo-eureka-server

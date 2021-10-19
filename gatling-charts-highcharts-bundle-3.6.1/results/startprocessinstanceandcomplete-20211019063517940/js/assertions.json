@@ -1,0 +1,10 @@
+{
+  "simulation": "computerdatabase.startProcessInstanceAndComplete",
+  "simulationId": "startprocessinstanceandcomplete",
+  "start": 1634625317940,
+  "description": "",
+  "scenarios": ["scenario name"],
+  "assertions": [
+
+  ]
+}

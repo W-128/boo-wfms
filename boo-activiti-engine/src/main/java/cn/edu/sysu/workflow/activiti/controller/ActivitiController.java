@@ -32,20 +32,17 @@ import java.util.Map;
 
     @Autowired private TaskService taskService;
 
-    @Autowired private RepositoryService repositoryService;
-
     /**
      * 部署流程定义
      *
      * @return
      */
-    @RequestMapping(value = "/initDeploy", method = RequestMethod.GET)
-    public ResponseEntity<?> initDeploy() {
+    @RequestMapping(value = "/initDeploy", method = RequestMethod.GET) public ResponseEntity<?> initDeploy() {
         HashMap<String, String> response = new HashMap<>();
 
         String r1 = "processes/online-shopping.bpmn20.xml";
         //部署流程
-        Deployment deployment = repositoryService.createDeployment().addClasspathResource(r1).deploy();
+        Deployment deployment = activitiService.initDeployByKey(r1);
 
         response.put("status", "success");
         response.put("message", "deploy process " + deployment.getName() + " success");
@@ -56,18 +53,18 @@ import java.util.Map;
     }
 
     /**
-     * 根据流程定义key部署流程定义
+     * 根据流程定义文件名部署流程定义
      *
-     * @param processModelKey
+     * @param processName
      * @return
      */
-    @RequestMapping(value = "/initDeploy/{processModelKey}", method = RequestMethod.POST)
-    public ResponseEntity<?> initDeployByKey(@PathVariable(value = "processModelKey") String processModelKey) {
+    @RequestMapping(value = "/initDeploy/{processName}", method = RequestMethod.POST)
+    public ResponseEntity<?> initDeployByKey(@PathVariable(value = "processName") String processName) {
         HashMap<String, String> response = new HashMap<>();
 
-        String r1 = "processes/" + processModelKey + ".bpmn20.xml";
+        String r1 = "processes/" + processName + ".bpmn20.xml";
         //部署流程
-        Deployment deployment = repositoryService.createDeployment().addClasspathResource(r1).deploy();
+        Deployment deployment = activitiService.initDeployByKey(r1);
 
         response.put("status", "success");
         response.put("message", "deploy process " + deployment.getName() + " success");
@@ -77,6 +74,12 @@ import java.util.Map;
         return ResponseEntity.status(HttpStatus.OK).body(JSON.toJSONString(response));
     }
 
+    /**
+     * 根据流程名启动流程实例
+     * @param variables
+     * @param processModelKey
+     * @return
+     */
     @RequestMapping(value = "/startProcessInstanceByKey/{processModelKey}", method = RequestMethod.POST)
     public ResponseEntity<?> startProcessInstanceByKey(@RequestParam Map<String, Object> variables,
         @PathVariable(value = "processModelKey") String processModelKey) {
@@ -184,6 +187,27 @@ import java.util.Map;
     }
 
     /**
+     * 获取所有未完成的任务
+     * @return
+     */
+    @RequestMapping(value = "/getActiveTasks", method = RequestMethod.GET)
+    public ResponseEntity<?> getActiveTasks() {
+        HashMap<String, String> response = new HashMap<>();
+
+        List<Task> tasks = activitiService.getActiveTasks();
+        List<String> taskIds = new ArrayList<>();
+        for (Task task : tasks) {
+            taskIds.add(task.getId());
+        }
+        response.put("status", "success");
+        response.put("message",
+            "get active task list success");
+        response.put("taskIds", taskIds.toString());
+        response.put("taskCounts",tasks.size()+"");
+        logger.info(response.toString());
+        return ResponseEntity.status(HttpStatus.OK).body(JSON.toJSONString(response));
+    }
+    /**
      * 认领任务
      *
      * @param variables
@@ -234,6 +258,21 @@ import java.util.Map;
         response.put("status", "message");
         response.put("message", "complete task of taskId " + taskId + " with taskName" + task.getName());
         response.put("isEnded", activitiService.isEnded(processInstanceId) ? "1" : "0");
+        logger.info(response.toString());
+        return ResponseEntity.status(HttpStatus.OK).body(JSON.toJSONString(response));
+    }
+
+    @RequestMapping(value = "/completeTask/{taskId}", method = RequestMethod.POST)
+    public ResponseEntity<?> completeTask(@RequestParam Map<String, Object> variables,
+        @PathVariable(value = "taskId") String taskId) {
+
+        HashMap<String, String> response = new HashMap<>();
+
+        //完成任务
+        Task task = taskService.createTaskQuery().taskId(taskId).singleResult();
+        activitiService.completeTask(taskId, variables);
+        response.put("status", "message");
+        response.put("message", "complete task of taskId " + taskId + " with taskName" + task.getName());
         logger.info(response.toString());
         return ResponseEntity.status(HttpStatus.OK).body(JSON.toJSONString(response));
     }

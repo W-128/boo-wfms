@@ -1,7 +1,9 @@
 package cn.edu.sysu.workflow.activiti.service.impl;
 
+import org.activiti.engine.RepositoryService;
 import org.activiti.engine.RuntimeService;
 import org.activiti.engine.TaskService;
+import org.activiti.engine.repository.Deployment;
 import org.activiti.engine.runtime.ProcessInstance;
 import org.activiti.engine.task.Task;
 import org.slf4j.Logger;
@@ -29,6 +31,13 @@ public class ActivitiServiceImpl implements ActivitiService {
     @Autowired
     TaskService taskService;
 
+    @Autowired
+    RepositoryService repositoryService;
+
+    public Deployment initDeployByKey(String processName){
+        return repositoryService.createDeployment().addClasspathResource(processName).deploy();
+    }
+
     public ProcessInstance startProcessInstanceByKey(String processModelKey, Map<String,Object> variables) {
         return runtimeService.startProcessInstanceByKey(processModelKey, variables);
     }
@@ -48,7 +57,9 @@ public class ActivitiServiceImpl implements ActivitiService {
     public Task getCurrentSingleTask(String processInstanceId) {
         return taskService.createTaskQuery().processInstanceId(processInstanceId).singleResult();
     }
-
+    public List<Task> getActiveTasks(){
+        return taskService.createTaskQuery().active().list();
+    }
     public void claimTask(String taskId, String assignee) {
         taskService.claim(taskId, assignee);
     }
