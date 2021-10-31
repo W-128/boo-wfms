@@ -93,5 +93,5 @@ class startProcessInstanceAndComplete extends Simulation {
   // Note that Gatling has recorded real time pauses
   //    .pause(7)
 
-  setUp(scn.inject(constantUsersPerSec(1).during(6.seconds)).protocols(httpProtocol))
+  setUp(scn.inject(constantUsersPerSec(1).during(600.seconds)).protocols(httpProtocol))
 }
