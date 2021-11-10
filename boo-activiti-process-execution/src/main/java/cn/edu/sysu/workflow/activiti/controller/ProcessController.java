@@ -42,6 +42,7 @@ public class ProcessController {
 
         //参数校验
         ArrayList<String> missingParams = new ArrayList<>();
+        variables.put("1",1);
         if (variables == null) missingParams.add("variables");
         if (processModelKey == null) missingParams.add("processModelKey");
         if (missingParams.size() > 0) {
@@ -68,6 +69,7 @@ public class ProcessController {
 
         //参数校验
         ArrayList<String> missingParams = new ArrayList<>();
+        variables.put("1",1);
         if (variables == null) missingParams.add("variables");
         if (processDefinitionId == null) missingParams.add("processDefinitionId");
         if (missingParams.size() > 0) {
@@ -195,6 +197,7 @@ public class ProcessController {
 
         //校验参数
         ArrayList<String> missingParams = new ArrayList<>();
+        variables.put("1",1);
         if (variables == null) missingParams.add("variables");
         if (processInstanceId == null) missingParams.add("processInstanceId");
         if (processDefinitionId == null) missingParams.add("processDefinitionId");
@@ -225,6 +228,7 @@ public class ProcessController {
 
         //校验参数
         ArrayList<String> missingParams = new ArrayList<>();
+        variables.put("1",1);
         if (variables == null) missingParams.add("variables");
         if (processInstanceId == null) missingParams.add("processInstanceId");
         if (processDefinitionId == null) missingParams.add("processDefinitionId");
