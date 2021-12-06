@@ -23,3 +23,10 @@
 | boo-common                | 项目基础包                                         |
 | boo-activiti-engine       | 无状态工作流引擎Activiti                                     |
 | boo-activiti-process-execution       | 无状态云工作流系统准入和调度模块                                     |
+
+
+
+
+ boo-activiti-process-execution http://222.200.180.59:10238/activiti-process-execution
+ 
+ boo-activiti-engine-query-start http://222.200.180.59:10239/activiti-engine-query-start

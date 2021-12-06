@@ -52,6 +52,7 @@ public class TimingWheel {
             Bucket bucket = buckets[bucketIndex];
             bucket.addTask(timerTask);
             // 添加到优先队列中
+            // 原过期时间不等于现过期时间 是不是意味着转了一轮了
             if (bucket.setExpire(delayMs + currentTimestamp - (delayMs + currentTimestamp) % tickMs)) {
                 priorityQueue.offer(bucket);
 
@@ -60,6 +61,7 @@ public class TimingWheel {
                     isInitial.set(false);
                     return true;
                 }
+                //非第一次添加任务
                 int taskNum = buckets[(bucketIndex+wheelSize-1)%wheelSize].getTaskNum();
                 Timer.getInstance().getTimeWindow().addLast(taskNum);
             }

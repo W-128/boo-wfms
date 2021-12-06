@@ -28,7 +28,6 @@ public class ProcessController {
     @Autowired
     private ProcessService processService;
 
-
     /**
      * 根据key启动流程
      * @param variables
@@ -42,7 +41,6 @@ public class ProcessController {
 
         //参数校验
         ArrayList<String> missingParams = new ArrayList<>();
-        variables.put("1",1);
         if (variables == null) missingParams.add("variables");
         if (processModelKey == null) missingParams.add("processModelKey");
         if (missingParams.size() > 0) {
@@ -50,7 +48,7 @@ public class ProcessController {
             response.put("message", "required parameters missing: " + CommonUtil.ArrayList2String(missingParams, " "));
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(JSON.toJSONString(response));
         }
-        logger.info("startProcessInstanceByKey");
+        logger.info("//        })\n");
 
         //启动流程
         return  processService.startProcessInstanceByKey(processModelKey, variables);
@@ -69,7 +67,6 @@ public class ProcessController {
 
         //参数校验
         ArrayList<String> missingParams = new ArrayList<>();
-        variables.put("1",1);
         if (variables == null) missingParams.add("variables");
         if (processDefinitionId == null) missingParams.add("processDefinitionId");
         if (missingParams.size() > 0) {
@@ -197,7 +194,6 @@ public class ProcessController {
 
         //校验参数
         ArrayList<String> missingParams = new ArrayList<>();
-        variables.put("1",1);
         if (variables == null) missingParams.add("variables");
         if (processInstanceId == null) missingParams.add("processInstanceId");
         if (processDefinitionId == null) missingParams.add("processDefinitionId");
@@ -228,7 +224,6 @@ public class ProcessController {
 
         //校验参数
         ArrayList<String> missingParams = new ArrayList<>();
-        variables.put("1",1);
         if (variables == null) missingParams.add("variables");
         if (processInstanceId == null) missingParams.add("processInstanceId");
         if (processDefinitionId == null) missingParams.add("processDefinitionId");

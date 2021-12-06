@@ -12,6 +12,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * 引擎执行的任务
+ *
  * @author: Gordan Lin
  * @create: 2019/12/13
  **/
@@ -25,6 +26,16 @@ public class ActivitiTask implements Runnable {
 
     private RestTemplate restTemplate;
 
+    public long getStartTime() {
+        return startTime;
+    }
+
+    public void setStartTime(long startTime) {
+        this.startTime = startTime;
+    }
+
+    private long startTime;
+
     public ActivitiTask(String url, MultiValueMap<String, Object> variables, RestTemplate restTemplate) {
         this.url = url;
         this.variables = variables;
@@ -32,15 +43,15 @@ public class ActivitiTask implements Runnable {
     }
 
     public static AtomicInteger increment = new AtomicInteger(0);
-    public static  AtomicInteger decrement = new AtomicInteger(0);
+    public static AtomicInteger decrement = new AtomicInteger(0);
 
-    @Override
-    public void run() {
+    @Override public void run() {
         try {
-            long start = System.currentTimeMillis();
+            //            long start = System.currentTimeMillis();
             ResponseEntity<String> result = restTemplate.postForEntity(url, variables, String.class);
             long end = System.currentTimeMillis();
-            logger.info("request response time: " + (end-start) + "ms");
+            int rtl = (Integer)variables.get("rtl").get(0);
+            logger.info("rtllevel:"+rtl+" request response time: " + (end - this.startTime) + "ms");
         } catch (Exception e) {
             e.printStackTrace();
         }

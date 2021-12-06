@@ -19,7 +19,7 @@ public class Timer {
     private static Logger logger = LoggerFactory.getLogger(Timer.class);
 
     // 时间槽时间长度，单位是毫秒
-    private static final int TICK_MS = 1000;
+    private static final int TICK_MS = 500;
     // 时间槽个数
     private static final int WHEEL_SIZE = 60;
     // 滑动时间窗口大小

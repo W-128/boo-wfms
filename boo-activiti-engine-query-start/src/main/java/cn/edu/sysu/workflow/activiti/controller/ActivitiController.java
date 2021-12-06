@@ -25,7 +25,7 @@ import java.util.Map;
  * @author: Gordan Lin
  * @create: 2019/9/24
  */
-@RestController @RequestMapping("/activiti-engine") @SuppressWarnings("unchecked") public class ActivitiController {
+@RestController @RequestMapping("/activiti-engine-query-start") @SuppressWarnings("unchecked") public class ActivitiController {
     private final static Logger logger = LoggerFactory.getLogger(ActivitiController.class);
 
     @Autowired private ActivitiService activitiService;

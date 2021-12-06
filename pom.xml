@@ -29,6 +29,8 @@
         <module>boo-eureka-server</module>
         <module>boo-activiti-engine</module>
         <module>boo-activiti-process-execution</module>
+        <module>boo-activiti-engine-query-start</module>
+
     </modules>
 
     <dependencyManagement>
