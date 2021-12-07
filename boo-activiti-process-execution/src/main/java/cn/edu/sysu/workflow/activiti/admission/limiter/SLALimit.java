@@ -18,7 +18,7 @@ public class SLALimit {
     public static final int REQUEST_RATE_PER_LEVEL = 5;
 
     // 一个级别对应的响应时间要求
-    public static final int RESPONSE_TIME_PER_LEVEL = 500;
+    public static final int RESPONSE_TIME_PER_LEVEL = 1000;
 
     public static LoadingCache<String, RateLimiter> requestRateLimiterCaches = CacheBuilder.newBuilder()
             .expireAfterWrite(1, TimeUnit.SECONDS)
