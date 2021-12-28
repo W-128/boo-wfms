@@ -48,7 +48,7 @@ public class ActivitiTask implements Runnable {
     @Override public void run() {
         try {
             //            long start = System.currentTimeMillis();
-            ResponseEntity<String> result = restTemplate.postForEntity(url, variables, String.class);
+            ResponseEntity<String> result = restTemplate.getForEntity(url, String.class);
             long end = System.currentTimeMillis();
             int rtl = (Integer)variables.get("rtl").get(0);
             logger.info("rtllevel:"+rtl+" request response time: " + (end - this.startTime) + "ms");

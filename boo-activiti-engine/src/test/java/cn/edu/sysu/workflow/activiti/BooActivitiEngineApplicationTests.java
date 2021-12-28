@@ -307,4 +307,36 @@ public class BooActivitiEngineApplicationTests {
         //判断是否完成
         System.out.println(historyService.createHistoricProcessInstanceQuery().finished().count());
     }
+
+    @Test public void testAllActiveTask(){
+        String r1 = "processes/online-shopping-five-task.bpmn20.xml";
+
+        repositoryService.createDeployment().addClasspathResource(r1).deploy();
+
+        runtimeService.startProcessInstanceByKey("online-shopping-five-task");
+        runtimeService.startProcessInstanceByKey("online-shopping-five-task");
+
+        List<Task> activeTask =taskService.createTaskQuery().active().list();
+        for (Task task : activeTask) {
+            System.out.println(task.getName());
+        }
+
+
+    }
+
+    @Test public void executeTask(){
+        List<Task> activeTask =taskService.createTaskQuery().active().list();
+        for (Task task : activeTask) {
+            System.out.println(task.getName());
+        }
+        for (Task task : activeTask) {
+            taskService.complete(task.getId());
+        }
+        activeTask =taskService.createTaskQuery().active().list();
+        for (Task task : activeTask) {
+            System.out.println(task.getName());
+        }
+
+    }
+
 }

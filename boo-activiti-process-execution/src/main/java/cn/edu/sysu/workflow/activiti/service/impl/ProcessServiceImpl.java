@@ -5,11 +5,13 @@ import cn.edu.sysu.workflow.activiti.admission.timewheel.ActivitiTask;
 import cn.edu.sysu.workflow.activiti.admission.timewheel.Timer;
 import cn.edu.sysu.workflow.activiti.admission.timewheel.TimerTask;
 import cn.edu.sysu.workflow.activiti.util.CommonUtil;
+import com.alibaba.fastjson.JSON;
 import com.google.common.util.concurrent.RateLimiter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import cn.edu.sysu.workflow.activiti.service.ProcessService;
@@ -28,7 +30,7 @@ public class ProcessServiceImpl implements ProcessService, InitializingBean {
     @Autowired
     RestTemplate restTemplate;
     private final String URL_PREFIX = "http://activiti-engine/activiti-engine";
-    //硬編碼 怎麽改
+
     private final String QUERY_START_URL_PREFIX = "http://activiti-engine-query-start/activiti-engine-query-start";
 
     @Override
@@ -96,9 +98,20 @@ public class ProcessServiceImpl implements ProcessService, InitializingBean {
     public ResponseEntity<?> completeTask(String taskId, String processDefinitionId, String processInstanceId, Map<String, Object> variables) {
         long start = System.currentTimeMillis();
         int rtl = (Integer)variables.get("rtl");
-        String url = URL_PREFIX + "/completeTask/" + processDefinitionId + "/" + processInstanceId + "/" + taskId;
+        String url = URL_PREFIX + "/completeTask/" + taskId;
         MultiValueMap<String, Object> valueMap = CommonUtil.map2MultiValueMap(variables);
-        ResponseEntity<String> result = restTemplate.postForEntity(url, valueMap, String.class);
+        ResponseEntity<String> result = restTemplate.getForEntity(url,String.class);
+        long end = System.currentTimeMillis();
+        logger.info("rtllevel:"+rtl+" completeTask request response time: " + (end-start) + "ms");
+        return result;
+    }
+
+    public ResponseEntity<?> completeTask(String taskId, Map<String, Object> variables){
+        long start = System.currentTimeMillis();
+        int rtl = (Integer)variables.get("rtl");
+        String url = URL_PREFIX + "/completeTask/" + taskId;
+        MultiValueMap<String, Object> valueMap = CommonUtil.map2MultiValueMap(variables);
+        ResponseEntity<String> result = restTemplate.getForEntity(url,String.class);
         long end = System.currentTimeMillis();
         logger.info("rtllevel:"+rtl+" completeTask request response time: " + (end-start) + "ms");
         return result;
@@ -121,10 +134,38 @@ public class ProcessServiceImpl implements ProcessService, InitializingBean {
         if (!limiter.tryAcquire()) {
             logger.error("rar："+rar+" rtl："+rtl);
             logger.error("流程定义："+processDefinitionId+" 流程实例："+processInstanceId+" 任务："+taskId+" 请求由于限流被拒绝");
-            return ResponseEntity.ok("请求由于限流被拒绝");
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("请求由于限流被拒绝");
         }
         long start = System.currentTimeMillis();
-        String url = URL_PREFIX + "/completeTask/" + processDefinitionId + "/" + processInstanceId + "/" + taskId;
+        String url = URL_PREFIX + "/completeTask/" + taskId;
+        MultiValueMap<String, Object> valueMap = CommonUtil.map2MultiValueMap(variables);
+        ActivitiTask activitiTask = new ActivitiTask(url, valueMap, restTemplate);
+        activitiTask.setStartTime(start);
+        TimerTask timerTask = new TimerTask(rtl* SLALimit.RESPONSE_TIME_PER_LEVEL, activitiTask);
+        Timer.getInstance().addTask(timerTask);
+
+
+        return ResponseEntity.ok("请求正在调度中");
+    }
+    public ResponseEntity<?> completeTaskWithDelay(String taskId,Map<String, Object> variables){
+        //获取租户SLA级别定义
+        int rar = (Integer)variables.get("rar");
+        int rtl = (Integer)variables.get("rtl");
+
+        RateLimiter limiter = null;
+        try {
+            // key要求：tenantId-rarLevel
+            limiter = SLALimit.requestRateLimiterCaches.get("test-"+rar);
+        } catch (ExecutionException e) {
+            e.printStackTrace();
+        }
+        if (!limiter.tryAcquire()) {
+            logger.error("rar："+rar+" rtl："+rtl);
+            logger.error("任务："+taskId+" 请求由于限流被拒绝");
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("请求由于限流被拒绝");
+        }
+        long start = System.currentTimeMillis();
+        String url = URL_PREFIX + "/completeTask/" + taskId;
         MultiValueMap<String, Object> valueMap = CommonUtil.map2MultiValueMap(variables);
         ActivitiTask activitiTask = new ActivitiTask(url, valueMap, restTemplate);
         activitiTask.setStartTime(start);

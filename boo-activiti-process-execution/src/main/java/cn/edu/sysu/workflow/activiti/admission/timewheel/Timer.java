@@ -1,5 +1,6 @@
 package cn.edu.sysu.workflow.activiti.admission.timewheel;
 
+import com.google.common.util.concurrent.RateLimiter;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -11,6 +12,7 @@ import java.util.concurrent.*;
 
 /**
  * 定时器
+ *
  * @author: Gordan Lin
  * @create: 2019/12/12
  **/
@@ -25,16 +27,21 @@ public class Timer {
     // 滑动时间窗口大小
     private static final int TIME_WINDOW_SIZE = 20;
 
+    private static final int REQUST_THRESHOLD = 60;
+
     // 时间轮
     private TimingWheel timingWheel;
 
-    // 对于一个Timer以及附属的时间轮，都只有一个priorityQueue
-    private PriorityBlockingQueue<Bucket> priorityQueue = new PriorityBlockingQueue<>(WHEEL_SIZE+1, new Comparator<Bucket>() {
-        @Override
-        public int compare(Bucket bucket1, Bucket bucket2) {
-            return (int) (bucket1.getExpire()-bucket2.getExpire());
-        }
-    });
+    //限流器
+    private RateLimiter rateLimiter;
+
+    // 对于一个Timer以及附属的时间轮，都只有一个priorityQueue priorityQueue中存放的是Bucket
+    private PriorityBlockingQueue<Bucket> priorityQueue =
+        new PriorityBlockingQueue<>(WHEEL_SIZE + 1, new Comparator<Bucket>() {
+            @Override public int compare(Bucket bucket1, Bucket bucket2) {
+                return (int)(bucket1.getExpire() - bucket2.getExpire());
+            }
+        });
 
     // 优先队列中各个bucket任务数，通过TIME_WINDOW_SIZE控制长度实现滑动时间窗口（空间换时间）
     private LinkedList<Integer> timeWindow = new LinkedList<>();
@@ -57,12 +64,11 @@ public class Timer {
     }
 
     private Timer() {
-        workerThreadPool = Executors.newFixedThreadPool(100, new ThreadFactoryBuilder().setPriority(10)
-                .setNameFormat("TimerWheelWorker")
-                .build());
-        bossThreadPool = Executors.newScheduledThreadPool(1, new ThreadFactoryBuilder().setPriority(10)
-                .setNameFormat("TimerWheelBoss")
-                .build());
+        rateLimiter = RateLimiter.create(REQUST_THRESHOLD);
+        workerThreadPool = Executors.newFixedThreadPool(100,
+            new ThreadFactoryBuilder().setPriority(10).setNameFormat("TimerWheelWorker").build());
+        bossThreadPool = Executors.newScheduledThreadPool(1,
+            new ThreadFactoryBuilder().setPriority(10).setNameFormat("TimerWheelBoss").build());
 
         timingWheel = new TimingWheel(TICK_MS, WHEEL_SIZE, System.currentTimeMillis(), priorityQueue);
         bossThreadPool.scheduleAtFixedRate(() -> {
@@ -79,39 +85,85 @@ public class Timer {
      */
     public void addTask(TimerTask timerTask) {
         if (!timingWheel.addTask(timerTask)) {
-            workerThreadPool.submit(timerTask.getTask());
+            //在限流范围内
+            if (rateLimiter.tryAcquire() == true) {
+                workerThreadPool.submit(timerTask.getTask());
+            }
+            //超出阈值，延时再提交
+            else {
+                logger.debug("delayMs=0的请求由于限流被延迟");
+                timerTask.setDelayMs(timerTask.getDelayMs() + TICK_MS);
+                addTask(timerTask);
+            }
         }
     }
 
     /**
-     *  指针推进
+     * 指针推进
      */
     public void advanceClock() {
+        logger.debug("指针向前一格");
         long currentTimestamp = System.currentTimeMillis();
         timingWheel.advanceClock(currentTimestamp);
 
         Bucket bucket = priorityQueue.peek();
         if (bucket == null || bucket.getExpire() > currentTimestamp) {
-//            logger.info("当前负载：0");
+            //            logger.info("当前负载：0");
             return;
         }
-
+        //pop出来的就是到期的
         try {
             // 执行请求
             List<TimerTask> taskList = admitting();
-//            logger.info("当前负载：{}", taskList.size());
-            if (!timeWindow.isEmpty()) timeWindow.removeFirst();
+            //测试
+            //直接pop 优先级队列的顶部
+//            List<TimerTask> taskList = PollPriorityQueue();
+            //            logger.info("当前负载：{}", taskList.size());
+            if (!timeWindow.isEmpty()) {
+                logger.debug("当前时间窗第一格：{}", timeWindow.get(0));
+                timeWindow.removeFirst();
+            }
 
             for (TimerTask timerTask : taskList) {
-                workerThreadPool.submit(timerTask.getTask());
+                if (rateLimiter.tryAcquire() == true) {
+                    workerThreadPool.submit(timerTask.getTask());
+                } else {
+                    logger.debug("请求由于限流被延迟");
+                    timerTask.setDelayMs(timerTask.getDelayMs() + TICK_MS);
+                    addTask(timerTask);
+                }
+
             }
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
+    private List<TimerTask> PollPriorityQueue() {
+        Bucket bucket = priorityQueue.poll();
+        List<TimerTask> taskList = bucket.removeTaskAndGet(-1);
+        //        if (bucket.getTaskNum()>REQUST_THRESHOLD){
+        //            logger.debug("bucket中的请求数量超出阈值");
+        ////            //后面的一个bucket
+        ////            Bucket tempBucket = priorityQueue.peek();
+        //            taskList=bucket.removeTaskAndGet(REQUST_THRESHOLD);
+        //            //remainTask都是已经到期了的 将它们延后一个t0
+        //            List<TimerTask> remainTask=bucket.removeTaskAndGet(-1);
+        //            for (TimerTask timerTask : remainTask) {
+        //                timerTask.setDelayMs(TICK_MS);
+        //                addTask(timerTask);
+        //            }
+        //        }
+        //        else{
+        //            taskList=bucket.removeTaskAndGet(-1);
+        //        }
+        return taskList;
+
+    }
+
     /**
      * admitting算法
+     *
      * @return
      */
     private List<TimerTask> admitting() {
@@ -121,10 +173,11 @@ public class Timer {
         int requestAvg = 0; // 滑动窗口请求平均数
         int i;
         for (i = 1; i <= timeWindow.size(); i++) {
-            if (i > TIME_WINDOW_SIZE) break;
-            requestSum += timeWindow.get(i-1);
+            if (i > TIME_WINDOW_SIZE)
+                break;
+            requestSum += timeWindow.get(i - 1);
         }
-        requestAvg = requestSum/i;
+        requestAvg = requestSum / i;
 
         if (timeWindow.isEmpty() || timeWindow.get(0) > requestAvg) {
             Bucket bucket = priorityQueue.poll();
@@ -133,13 +186,15 @@ public class Timer {
             Bucket bucket = priorityQueue.poll();
             taskList = bucket.removeTaskAndGet(-1);
 
-            int moveCount = requestAvg-timeWindow.get(0);
+            int moveCount = requestAvg - timeWindow.get(0);
             // 移动时间槽请求
             if (moveCount > 0) {
+                //从队列中有的第一个bucket移动 不一定是后一个bucket
                 Bucket tempBucket = priorityQueue.peek();
+                //可能会不足moveCount
                 List<TimerTask> tempTaskList = tempBucket.removeTaskAndGet(moveCount);
                 taskList.addAll(tempTaskList);
-                int remain = timeWindow.get(1)-tempTaskList.size();
+                int remain = timeWindow.get(1) - tempTaskList.size();
                 timeWindow.set(1, remain);
             }
         }

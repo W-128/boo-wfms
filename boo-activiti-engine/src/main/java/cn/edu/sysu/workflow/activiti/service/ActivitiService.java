@@ -78,6 +78,8 @@ public interface ActivitiService {
      */
     public boolean completeTask(String taskId, Map<String, Object> variables);
 
+
+    public boolean completeTask(String taskId);
     /**
      * 根据流程实例Id判断流程实例是否结束
      * @param processInstanceId

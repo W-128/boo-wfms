@@ -261,18 +261,32 @@ import java.util.Map;
         logger.info(response.toString());
         return ResponseEntity.status(HttpStatus.OK).body(JSON.toJSONString(response));
     }
+    //原先的
+//    @RequestMapping(value = "/completeTask/{taskId}", method = RequestMethod.POST)
+//    public ResponseEntity<?> completeTask(@RequestParam Map<String, Object> variables,
+//        @PathVariable(value = "taskId") String taskId) {
+//
+//        HashMap<String, String> response = new HashMap<>();
+//
+//        //完成任务
+//        Task task = taskService.createTaskQuery().taskId(taskId).singleResult();
+//        activitiService.completeTask(taskId, variables);
+//        response.put("status", "message");
+//        response.put("message", "complete task of taskId " + taskId + " with taskName" + task.getName());
+//        logger.info(response.toString());
+//        return ResponseEntity.status(HttpStatus.OK).body(JSON.toJSONString(response));
+//    }
 
-    @RequestMapping(value = "/completeTask/{taskId}", method = RequestMethod.POST)
-    public ResponseEntity<?> completeTask(@RequestParam Map<String, Object> variables,
-        @PathVariable(value = "taskId") String taskId) {
+    @RequestMapping(value = "/completeTask/{taskId}", method = RequestMethod.GET)
+    public ResponseEntity<?> completeTask(@PathVariable(value = "taskId") String taskId) {
 
         HashMap<String, String> response = new HashMap<>();
 
         //完成任务
-        Task task = taskService.createTaskQuery().taskId(taskId).singleResult();
-        activitiService.completeTask(taskId, variables);
-        response.put("status", "message");
-        response.put("message", "complete task of taskId " + taskId + " with taskName" + task.getName());
+//        Task task = taskService.createTaskQuery().taskId(taskId).singleResult();
+        activitiService.completeTask(taskId);
+        response.put("status", "success");
+        response.put("message", "complete task of taskId " + taskId);
         logger.info(response.toString());
         return ResponseEntity.status(HttpStatus.OK).body(JSON.toJSONString(response));
     }

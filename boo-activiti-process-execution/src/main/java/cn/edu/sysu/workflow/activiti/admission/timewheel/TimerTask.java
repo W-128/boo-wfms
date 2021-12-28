@@ -7,6 +7,10 @@ package cn.edu.sysu.workflow.activiti.admission.timewheel;
  **/
 public class TimerTask {
 
+    public void setDelayMs(long delayMs) {
+        this.delayMs = delayMs;
+    }
+
     // 延迟时间
     private long delayMs;
 

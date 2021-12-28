@@ -66,6 +66,8 @@ public interface ProcessService {
      */
     public ResponseEntity<?> completeTask(String taskId, String processDefinitionId, String processInstanceId, Map<String, Object> variables);
 
+    public ResponseEntity<?> completeTask(String taskId, Map<String, Object> variables);
+
     /**
      * 执行任务
      * @param taskId
@@ -73,6 +75,8 @@ public interface ProcessService {
      * @return
      */
     public ResponseEntity<?> completeTaskWithDelay(String taskId, String processDefinitionId, String processInstanceId, Map<String, Object> variables);
+
+    public ResponseEntity<?> completeTaskWithDelay(String taskId,Map<String, Object> variables);
 
     /**
      * 根据流程实例Id判断流程实例是否结束

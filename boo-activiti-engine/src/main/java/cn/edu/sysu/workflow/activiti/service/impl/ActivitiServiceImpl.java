@@ -68,6 +68,10 @@ public class ActivitiServiceImpl implements ActivitiService {
         taskService.complete(taskId, variables);
         return true;
     }
+    public boolean completeTask(String taskId) {
+        taskService.complete(taskId);
+        return true;
+    }
 
     public boolean isEnded(String processInstanceId) {
         ProcessInstance processInstance = runtimeService.createProcessInstanceQuery().processInstanceId(processInstanceId).singleResult();
