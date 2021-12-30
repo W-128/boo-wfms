@@ -24,7 +24,8 @@ public class TestTask implements Runnable {
     public TestTask(String name){
         this.name=name;
     }
-
+    public TestTask(){
+    }
     @Override public void run(){
         logger.debug(name+"提交执行");
     }

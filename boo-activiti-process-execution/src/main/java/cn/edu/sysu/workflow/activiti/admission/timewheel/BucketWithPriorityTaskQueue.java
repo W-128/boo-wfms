@@ -1,23 +1,37 @@
 package cn.edu.sysu.workflow.activiti.admission.timewheel;
 
+import jdk.nashorn.internal.ir.IdentNode;
+
+import java.util.Comparator;
+import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.PriorityBlockingQueue;
 import java.util.concurrent.atomic.AtomicLong;
 
 /**
- * 时间槽
- *
- * @author: Gordan Lin
- * @create: 2019/12/12
- **/
-public class Bucket {
-
+ * @author wuyunzhi
+ * @create 2021-12-29 21:46
+ */
+public class BucketWithPriorityTaskQueue {
     // 当前槽的过期时间
     private AtomicLong expiration = new AtomicLong(-1L);
 
-    private List<TimerTask> taskList = new CopyOnWriteArrayList<>();
+    private int taskNumSize;
 
-    public Bucket() {
+    private PriorityBlockingQueue<TimerTask> taskQueue;
+
+    public BucketWithPriorityTaskQueue(int taskNumSize) {
+        this.taskNumSize = taskNumSize;
+        this.taskQueue = new PriorityBlockingQueue<>(taskNumSize, new Comparator<TimerTask>() {
+            @Override public int compare(TimerTask o1, TimerTask o2) {
+                return (int)(o1.getRtl() - o2.getRtl());
+            }
+        });
+    }
+
+    public BucketWithPriorityTaskQueue() {
     }
 
     /**
@@ -40,7 +54,7 @@ public class Bucket {
      * @param timerTask
      */
     public synchronized void addTask(TimerTask timerTask) {
-        taskList.add(timerTask);
+        taskQueue.add(timerTask);
     }
 
     /**
@@ -49,7 +63,7 @@ public class Bucket {
      * @return
      */
     public int getTaskNum() {
-        return taskList.size();
+        return taskQueue.size();
     }
 
     /**
@@ -59,21 +73,20 @@ public class Bucket {
      * @return
      */
     public synchronized List<TimerTask> removeTaskAndGet(int count) {
+        List<TimerTask> rtnList = new LinkedList<>();
         //全部返回
         if (count == -1) {
-            List<TimerTask> rtnList = new CopyOnWriteArrayList<>(taskList);
-            taskList.clear();
-            return rtnList;
+            count = taskQueue.size();
         }
-        List<TimerTask> rtnList = new CopyOnWriteArrayList<>();
+        Iterator<TimerTask> iterator = taskQueue.iterator();
         int n = 0;
-        for (TimerTask timerTask : taskList) {
+        while (iterator.hasNext()){
             if (n >= count) {
                 break;
             }
             n++;
-            rtnList.add(timerTask);
-            taskList.remove(timerTask);
+            rtnList.add(iterator.next());
+            iterator.remove();
         }
         return rtnList;
     }

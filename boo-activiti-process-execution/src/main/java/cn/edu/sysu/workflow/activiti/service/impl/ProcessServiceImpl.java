@@ -141,7 +141,7 @@ public class ProcessServiceImpl implements ProcessService, InitializingBean {
         MultiValueMap<String, Object> valueMap = CommonUtil.map2MultiValueMap(variables);
         ActivitiTask activitiTask = new ActivitiTask(url, valueMap, restTemplate);
         activitiTask.setStartTime(start);
-        TimerTask timerTask = new TimerTask(rtl* SLALimit.RESPONSE_TIME_PER_LEVEL, activitiTask);
+        TimerTask timerTask = new TimerTask(rtl * SLALimit.RESPONSE_TIME_PER_LEVEL, activitiTask, rtl);
         Timer.getInstance().addTask(timerTask);
 
 
@@ -169,7 +169,7 @@ public class ProcessServiceImpl implements ProcessService, InitializingBean {
         MultiValueMap<String, Object> valueMap = CommonUtil.map2MultiValueMap(variables);
         ActivitiTask activitiTask = new ActivitiTask(url, valueMap, restTemplate);
         activitiTask.setStartTime(start);
-        TimerTask timerTask = new TimerTask(rtl* SLALimit.RESPONSE_TIME_PER_LEVEL, activitiTask);
+        TimerTask timerTask = new TimerTask(rtl* SLALimit.RESPONSE_TIME_PER_LEVEL, activitiTask,rtl);
         Timer.getInstance().addTask(timerTask);
 
 

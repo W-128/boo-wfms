@@ -48,19 +48,19 @@ public class AdmissionTest  {
 
     }
 
-    public static void Thresholdtest(){
-        //threshold限定为2
-        //每秒启动3 应该有一个被延后t0
-        TestTask task1=new TestTask("task1");
-        TimerTask timerTask1 = new TimerTask(1000, task1);
-        TestTask task2=new TestTask("task2");
-        TimerTask timerTask2 = new TimerTask(1000, task2);
-        TestTask task3=new TestTask("task3");
-        TimerTask timerTask3 = new TimerTask(1000, task3);
-        Timer.getInstance().addTask(timerTask1);
-        Timer.getInstance().addTask(timerTask2);
-        Timer.getInstance().addTask(timerTask3);
-    }
+//    public static void Thresholdtest(){
+//        //threshold限定为2
+//        //每秒启动3 应该有一个被延后t0
+//        TestTask task1=new TestTask("task1");
+//        TimerTask timerTask1 = new TimerTask(1000, task1);
+//        TestTask task2=new TestTask("task2");
+//        TimerTask timerTask2 = new TimerTask(1000, task2);
+//        TestTask task3=new TestTask("task3");
+//        TimerTask timerTask3 = new TimerTask(1000, task3);
+//        Timer.getInstance().addTask(timerTask1);
+//        Timer.getInstance().addTask(timerTask2);
+//        Timer.getInstance().addTask(timerTask3);
+//    }
     public static void RateLimiterTest(){
         RateLimiter rateLimiter=RateLimiter.create(5);
 
@@ -89,20 +89,20 @@ public class AdmissionTest  {
         });
 
     }
-    public static void Delay0RateLimiterTest() {
-        Timer.getInstance().addTask(new TimerTask(0, new TestTask("task1")));
-        Timer.getInstance().addTask(new TimerTask(0, new TestTask("task2")));
-        Timer.getInstance().addTask(new TimerTask(0, new TestTask("task3")));
-        Timer.getInstance().addTask(new TimerTask(0, new TestTask("task4")));
-        Timer.getInstance().addTask(new TimerTask(0, new TestTask("task5")));
-        Timer.getInstance().addTask(new TimerTask(1000, new TestTask("task6")));
-        Timer.getInstance().addTask(new TimerTask(2000, new TestTask("task7")));
-
-
-
-
-
-
-
-    }
+//    public static void Delay0RateLimiterTest() {
+//        Timer.getInstance().addTask(new TimerTask(0, new TestTask("task1")));
+//        Timer.getInstance().addTask(new TimerTask(0, new TestTask("task2")));
+//        Timer.getInstance().addTask(new TimerTask(0, new TestTask("task3")));
+//        Timer.getInstance().addTask(new TimerTask(0, new TestTask("task4")));
+//        Timer.getInstance().addTask(new TimerTask(0, new TestTask("task5")));
+//        Timer.getInstance().addTask(new TimerTask(1000, new TestTask("task6")));
+//        Timer.getInstance().addTask(new TimerTask(2000, new TestTask("task7")));
+//
+//
+//
+//
+//
+//
+//
+//    }
 }

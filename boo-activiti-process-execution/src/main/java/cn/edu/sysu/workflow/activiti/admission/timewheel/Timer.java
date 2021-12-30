@@ -42,7 +42,7 @@ public class Timer {
                 return (int)(bucket1.getExpire() - bucket2.getExpire());
             }
         });
-
+    public static PriorityBlockingQueue<TimerTask> bufferPriorityQueue = new PriorityBlockingQueue<>();
     // 优先队列中各个bucket任务数，通过TIME_WINDOW_SIZE控制长度实现滑动时间窗口（空间换时间）
     private LinkedList<Integer> timeWindow = new LinkedList<>();
 
@@ -70,7 +70,7 @@ public class Timer {
         bossThreadPool = Executors.newScheduledThreadPool(1,
             new ThreadFactoryBuilder().setPriority(10).setNameFormat("TimerWheelBoss").build());
 
-        timingWheel = new TimingWheel(TICK_MS, WHEEL_SIZE, System.currentTimeMillis(), priorityQueue);
+        timingWheel = new TimingWheel(TICK_MS, WHEEL_SIZE, System.currentTimeMillis(), priorityQueue, REQUST_THRESHOLD);
         bossThreadPool.scheduleAtFixedRate(() -> {
             TIMER_INSTANCE.advanceClock();
         }, 0, TICK_MS, TimeUnit.MILLISECONDS);
@@ -108,35 +108,52 @@ public class Timer {
 
         Bucket bucket = priorityQueue.peek();
         if (bucket == null || bucket.getExpire() > currentTimestamp) {
-            //            logger.info("当前负载：0");
-            return;
+            logger.debug("时间槽为空或者未到期");
+            if (bufferPriorityQueue.size() != 0) {
+                TimerTask timerTask = null;
+                for (int i = 0; i < REQUST_THRESHOLD; i++) {
+                    timerTask = bufferPriorityQueue.poll();
+                    if (timerTask == null) {
+                        break;
+                    } else {
+                        workerThreadPool.submit(timerTask.getTask());
+                        logger.debug("从bufferPriorityQueue中提交任务");
+                    }
+                }
+                return;
+            } else {
+                //logger.info("当前负载：0");
+                return;
+            }
         }
+
         //pop出来的就是到期的
         try {
             // 执行请求
-            List<TimerTask> taskList = admitting();
+            List<TimerTask> taskList = admittingWithThreshold();
             //测试
             //直接pop 优先级队列的顶部
-//            List<TimerTask> taskList = PollPriorityQueue();
+            //            List<TimerTask> taskList = PollPriorityQueue();
             //            logger.info("当前负载：{}", taskList.size());
             if (!timeWindow.isEmpty()) {
-                logger.debug("当前时间窗第一格：{}", timeWindow.get(0));
+//                logger.debug("当前时间窗第一格：{}", timeWindow.get(0));
                 timeWindow.removeFirst();
             }
 
             for (TimerTask timerTask : taskList) {
-                if (rateLimiter.tryAcquire() == true) {
-                    workerThreadPool.submit(timerTask.getTask());
-                } else {
-                    logger.debug("请求由于限流被延迟");
-                    timerTask.setDelayMs(timerTask.getDelayMs() + TICK_MS);
-                    addTask(timerTask);
-                }
-
+                //                if (rateLimiter.tryAcquire() == true) {
+                //                    workerThreadPool.submit(timerTask.getTask());
+                //                } else {
+                //                    logger.debug("请求由于限流被延迟");
+                //                    timerTask.setDelayMs(timerTask.getDelayMs() + TICK_MS);
+                //                    addTask(timerTask);
+                //                }
+                workerThreadPool.submit(timerTask.getTask());
             }
         } catch (Exception e) {
             e.printStackTrace();
         }
+
     }
 
     private List<TimerTask> PollPriorityQueue() {
@@ -173,8 +190,9 @@ public class Timer {
         int requestAvg = 0; // 滑动窗口请求平均数
         int i;
         for (i = 1; i <= timeWindow.size(); i++) {
-            if (i > TIME_WINDOW_SIZE)
+            if (i > TIME_WINDOW_SIZE) {
                 break;
+            }
             requestSum += timeWindow.get(i - 1);
         }
         requestAvg = requestSum / i;
@@ -196,6 +214,26 @@ public class Timer {
                 taskList.addAll(tempTaskList);
                 int remain = timeWindow.get(1) - tempTaskList.size();
                 timeWindow.set(1, remain);
+            }
+        }
+        return taskList;
+    }
+
+    private List<TimerTask> admittingWithThreshold() {
+        List<TimerTask> taskList = null;
+        Bucket bucket = priorityQueue.poll();
+        int remainTaskNum = REQUST_THRESHOLD - bucket.getTaskNum();
+        taskList = bucket.removeTaskAndGet(-1);
+        logger.debug("remainTaskNum{}",remainTaskNum);
+        if (bufferPriorityQueue.size() != 0) {
+            TimerTask timerTask = null;
+            for (int i = 0; i < remainTaskNum; i++) {
+                timerTask = bufferPriorityQueue.poll();
+                if (timerTask == null) {
+                    break;
+                } else {
+                    taskList.add(timerTask);
+                }
             }
         }
         return taskList;
