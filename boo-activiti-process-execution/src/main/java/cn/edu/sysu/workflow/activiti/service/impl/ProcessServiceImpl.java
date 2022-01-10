@@ -121,21 +121,21 @@ public class ProcessServiceImpl implements ProcessService, InitializingBean {
     //延迟请求
     public ResponseEntity<?> completeTaskWithDelay(String taskId, String processDefinitionId, String processInstanceId, Map<String, Object> variables) {
         //获取租户SLA级别定义
-        int rar = (Integer)variables.get("rar");
+//        int rar = (Integer)variables.get("rar");
         int rtl = (Integer)variables.get("rtl");
 
-        RateLimiter limiter = null;
-        try {
-            // key要求：tenantId-rarLevel
-            limiter = SLALimit.requestRateLimiterCaches.get("test-"+rar);
-        } catch (ExecutionException e) {
-            e.printStackTrace();
-        }
-        if (!limiter.tryAcquire()) {
-            logger.error("rar："+rar+" rtl："+rtl);
-            logger.error("流程定义："+processDefinitionId+" 流程实例："+processInstanceId+" 任务："+taskId+" 请求由于限流被拒绝");
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("请求由于限流被拒绝");
-        }
+//        RateLimiter limiter = null;
+//        try {
+//            // key要求：tenantId-rarLevel
+//            limiter = SLALimit.requestRateLimiterCaches.get("test-"+rar);
+//        } catch (ExecutionException e) {
+//            e.printStackTrace();
+//        }
+//        if (!limiter.tryAcquire()) {
+//            logger.error("rar："+rar+" rtl："+rtl);
+//            logger.error("流程定义："+processDefinitionId+" 流程实例："+processInstanceId+" 任务："+taskId+" 请求由于限流被拒绝");
+//            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("请求由于限流被拒绝");
+//        }
         long start = System.currentTimeMillis();
         String url = URL_PREFIX + "/completeTask/" + taskId;
         MultiValueMap<String, Object> valueMap = CommonUtil.map2MultiValueMap(variables);
@@ -149,21 +149,21 @@ public class ProcessServiceImpl implements ProcessService, InitializingBean {
     }
     public ResponseEntity<?> completeTaskWithDelay(String taskId,Map<String, Object> variables){
         //获取租户SLA级别定义
-        int rar = (Integer)variables.get("rar");
+//        int rar = (Integer)variables.get("rar");
         int rtl = (Integer)variables.get("rtl");
 
-        RateLimiter limiter = null;
-        try {
-            // key要求：tenantId-rarLevel
-            limiter = SLALimit.requestRateLimiterCaches.get("test-"+rar);
-        } catch (ExecutionException e) {
-            e.printStackTrace();
-        }
-        if (!limiter.tryAcquire()) {
-            logger.error("rar："+rar+" rtl："+rtl);
-            logger.error("任务："+taskId+" 请求由于限流被拒绝");
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("请求由于限流被拒绝");
-        }
+//        RateLimiter limiter = null;
+//        try {
+//            // key要求：tenantId-rarLevel
+//            limiter = SLALimit.requestRateLimiterCaches.get("test-"+rar);
+//        } catch (ExecutionException e) {
+//            e.printStackTrace();
+//        }
+//        if (!limiter.tryAcquire()) {
+//            logger.error("rar："+rar+" rtl："+rtl);
+//            logger.error("任务："+taskId+" 请求由于限流被拒绝");
+//            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("请求由于限流被拒绝");
+//        }
         long start = System.currentTimeMillis();
         String url = URL_PREFIX + "/completeTask/" + taskId;
         MultiValueMap<String, Object> valueMap = CommonUtil.map2MultiValueMap(variables);

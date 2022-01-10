@@ -47,10 +47,11 @@ public class ActivitiTask implements Runnable {
 
     @Override public void run() {
         try {
-            //            long start = System.currentTimeMillis();
+            long waitEndTime = System.currentTimeMillis();
             ResponseEntity<String> result = restTemplate.getForEntity(url, String.class);
             long end = System.currentTimeMillis();
             int rtl = (Integer)variables.get("rtl").get(0);
+            logger.info("activiti engine response time: "+ (end-waitEndTime)+"ms");
             logger.info("rtllevel:"+rtl+" request response time: " + (end - this.startTime) + "ms");
         } catch (Exception e) {
             e.printStackTrace();

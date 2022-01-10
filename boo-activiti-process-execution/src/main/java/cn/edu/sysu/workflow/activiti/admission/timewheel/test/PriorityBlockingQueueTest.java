@@ -22,7 +22,7 @@ public class PriorityBlockingQueueTest {
         PriorityBlockingQueue<Person> priorityBlockingQueueWithMoney =
             new PriorityBlockingQueue(2, new Comparator<Person>() {
                 @Override public int compare(Person person1, Person person2) {
-                    return (int)(person1.money - person2.money);
+                    return (int)(person2.money - person1.money);
                 }
 
             });

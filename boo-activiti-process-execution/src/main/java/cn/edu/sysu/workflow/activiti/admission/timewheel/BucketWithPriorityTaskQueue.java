@@ -24,9 +24,10 @@ public class BucketWithPriorityTaskQueue {
 
     public BucketWithPriorityTaskQueue(int taskNumSize) {
         this.taskNumSize = taskNumSize;
+        //rtl大的优先级高
         this.taskQueue = new PriorityBlockingQueue<>(taskNumSize, new Comparator<TimerTask>() {
             @Override public int compare(TimerTask o1, TimerTask o2) {
-                return (int)(o1.getRtl() - o2.getRtl());
+                return (int)(o2.getRtl() - o1.getRtl());
             }
         });
     }
@@ -80,7 +81,7 @@ public class BucketWithPriorityTaskQueue {
         }
         Iterator<TimerTask> iterator = taskQueue.iterator();
         int n = 0;
-        while (iterator.hasNext()){
+        while (iterator.hasNext()) {
             if (n >= count) {
                 break;
             }
@@ -91,4 +92,11 @@ public class BucketWithPriorityTaskQueue {
         return rtnList;
     }
 
+    public int getTaskMaxRtl() {
+        return taskQueue.peek().getRtl();
+    }
+
+    public synchronized TimerTask getTaskQueueTop() {
+        return taskQueue.poll();
+    }
 }
