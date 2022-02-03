@@ -27,7 +27,7 @@ public class Timer {
     // 滑动时间窗口大小
     private static final int TIME_WINDOW_SIZE = 20;
 
-    private static final int REQUST_THRESHOLD = 60;
+    private static final int REQUST_THRESHOLD = 50;
 
     // 时间轮
     private TimingWheel timingWheel;
@@ -42,6 +42,8 @@ public class Timer {
                 return (int)(bucket1.getExpire() - bucket2.getExpire());
             }
         });
+
+    //存放时间槽中放不下的任务，按ddl排序
     public static PriorityBlockingQueue<TimerTask> bufferPriorityQueue = new PriorityBlockingQueue<>();
     // 优先队列中各个bucket任务数，通过TIME_WINDOW_SIZE控制长度实现滑动时间窗口（空间换时间）
     private LinkedList<Integer> timeWindow = new LinkedList<>();
@@ -65,7 +67,7 @@ public class Timer {
 
     private Timer() {
         rateLimiter = RateLimiter.create(REQUST_THRESHOLD);
-        workerThreadPool = Executors.newFixedThreadPool(100,
+        workerThreadPool = Executors.newFixedThreadPool(35,
             new ThreadFactoryBuilder().setPriority(10).setNameFormat("TimerWheelWorker").build());
         bossThreadPool = Executors.newScheduledThreadPool(1,
             new ThreadFactoryBuilder().setPriority(10).setNameFormat("TimerWheelBoss").build());

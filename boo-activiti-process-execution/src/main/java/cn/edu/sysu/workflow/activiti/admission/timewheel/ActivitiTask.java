@@ -26,6 +26,13 @@ public class ActivitiTask implements Runnable {
 
     private RestTemplate restTemplate;
 
+    private String processInstanceId;
+
+    private String taskName;
+
+    private long startTime;
+
+
     public long getStartTime() {
         return startTime;
     }
@@ -34,25 +41,41 @@ public class ActivitiTask implements Runnable {
         this.startTime = startTime;
     }
 
-    private long startTime;
+    public ActivitiTask(String url) {
+        this.url = url;
+    }
 
-    public ActivitiTask(String url, MultiValueMap<String, Object> variables, RestTemplate restTemplate) {
+    public ActivitiTask(String url, MultiValueMap<String, Object> variables, RestTemplate restTemplate,
+        String processInstanceId, String taskName, long startTime) {
         this.url = url;
         this.variables = variables;
         this.restTemplate = restTemplate;
+        this.processInstanceId = processInstanceId;
+        this.taskName = taskName;
+        this.startTime = startTime;
     }
 
-    public static AtomicInteger increment = new AtomicInteger(0);
-    public static AtomicInteger decrement = new AtomicInteger(0);
+
+    public ActivitiTask(String url, MultiValueMap<String, Object> variables, RestTemplate restTemplate,
+        long startTime) {
+        this.url = url;
+        this.variables = variables;
+        this.restTemplate = restTemplate;
+        this.startTime = startTime;
+    }
 
     @Override public void run() {
         try {
             long waitEndTime = System.currentTimeMillis();
+            logger.debug("activitiTask里restTemplate实例" + restTemplate.toString());
             ResponseEntity<String> result = restTemplate.getForEntity(url, String.class);
             long end = System.currentTimeMillis();
             int rtl = (Integer)variables.get("rtl").get(0);
-            logger.info("activiti engine response time: "+ (end-waitEndTime)+"ms");
-            logger.info("rtllevel:"+rtl+" request response time: " + (end - this.startTime) + "ms");
+            //logger.info("activiti engine response time: " + (end - waitEndTime) + "ms");
+            logger.info("rtllevel:" + rtl + " request response time: " + (end - this.startTime) + "ms");
+            logger.info(
+                "processInstanceId: " + processInstanceId + " taskName: " + taskName + " start: " + startTime + " end: " + end);
+
         } catch (Exception e) {
             e.printStackTrace();
         }

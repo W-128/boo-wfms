@@ -1,6 +1,7 @@
 package cn.edu.sysu.workflow.activiti.service;
 
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.ResponseBody;
 
 import java.util.List;
 import java.util.Map;
@@ -68,6 +69,7 @@ public interface ProcessService {
 
     public ResponseEntity<?> completeTask(String taskId, Map<String, Object> variables);
 
+    public ResponseEntity<?> completeTaskWithFIFOBuffer(String taskId, Map<String, Object> variable);
     /**
      * 执行任务
      * @param taskId

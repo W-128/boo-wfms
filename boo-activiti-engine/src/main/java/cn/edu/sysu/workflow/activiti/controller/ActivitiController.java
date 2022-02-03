@@ -76,6 +76,7 @@ import java.util.Map;
 
     /**
      * 根据流程名启动流程实例
+     *
      * @param variables
      * @param processModelKey
      * @return
@@ -188,10 +189,10 @@ import java.util.Map;
 
     /**
      * 获取所有未完成的任务
+     *
      * @return
      */
-    @RequestMapping(value = "/getActiveTasks", method = RequestMethod.GET)
-    public ResponseEntity<?> getActiveTasks() {
+    @RequestMapping(value = "/getActiveTasks", method = RequestMethod.GET) public ResponseEntity<?> getActiveTasks() {
         HashMap<String, String> response = new HashMap<>();
 
         List<Task> tasks = activitiService.getActiveTasks();
@@ -200,13 +201,13 @@ import java.util.Map;
             taskIds.add(task.getId());
         }
         response.put("status", "success");
-        response.put("message",
-            "get active task list success");
+        response.put("message", "get active task list success");
         response.put("taskIds", taskIds.toString());
-        response.put("taskCounts",tasks.size()+"");
+        response.put("taskCounts", tasks.size() + "");
         logger.info(response.toString());
         return ResponseEntity.status(HttpStatus.OK).body(JSON.toJSONString(response));
     }
+
     /**
      * 认领任务
      *
@@ -234,6 +235,7 @@ import java.util.Map;
 
     /**
      * 完成任务
+     *
      * @param variables
      * @param processDefinitionId
      * @param processInstanceId
@@ -261,21 +263,6 @@ import java.util.Map;
         logger.info(response.toString());
         return ResponseEntity.status(HttpStatus.OK).body(JSON.toJSONString(response));
     }
-    //原先的
-//    @RequestMapping(value = "/completeTask/{taskId}", method = RequestMethod.POST)
-//    public ResponseEntity<?> completeTask(@RequestParam Map<String, Object> variables,
-//        @PathVariable(value = "taskId") String taskId) {
-//
-//        HashMap<String, String> response = new HashMap<>();
-//
-//        //完成任务
-//        Task task = taskService.createTaskQuery().taskId(taskId).singleResult();
-//        activitiService.completeTask(taskId, variables);
-//        response.put("status", "message");
-//        response.put("message", "complete task of taskId " + taskId + " with taskName" + task.getName());
-//        logger.info(response.toString());
-//        return ResponseEntity.status(HttpStatus.OK).body(JSON.toJSONString(response));
-//    }
 
     @RequestMapping(value = "/completeTask/{taskId}", method = RequestMethod.GET)
     public ResponseEntity<?> completeTask(@PathVariable(value = "taskId") String taskId) {
@@ -283,10 +270,11 @@ import java.util.Map;
         HashMap<String, String> response = new HashMap<>();
 
         //完成任务
-//        Task task = taskService.createTaskQuery().taskId(taskId).singleResult();
+        Task task = taskService.createTaskQuery().taskId(taskId).singleResult();
         activitiService.completeTask(taskId);
         response.put("status", "success");
         response.put("message", "complete task of taskId " + taskId);
+        response.put("taskName", task.getName());
         logger.info(response.toString());
         return ResponseEntity.status(HttpStatus.OK).body(JSON.toJSONString(response));
     }
