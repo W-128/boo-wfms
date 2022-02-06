@@ -9,6 +9,7 @@ import org.activiti.engine.task.Task;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -25,7 +26,8 @@ import java.util.Map;
  * @author: Gordan Lin
  * @create: 2019/9/24
  */
-@RestController @RequestMapping("/activiti-engine-query-start") @SuppressWarnings("unchecked") public class ActivitiController {
+@RestController @RequestMapping("/activiti-engine-query-start") @SuppressWarnings("unchecked")
+public class ActivitiController {
     private final static Logger logger = LoggerFactory.getLogger(ActivitiController.class);
 
     @Autowired private ActivitiService activitiService;
@@ -76,6 +78,7 @@ import java.util.Map;
 
     /**
      * 根据流程名启动流程实例
+     *
      * @param variables
      * @param processModelKey
      * @return
@@ -188,10 +191,10 @@ import java.util.Map;
 
     /**
      * 获取所有未完成的任务
+     *
      * @return
      */
-    @RequestMapping(value = "/getActiveTasks", method = RequestMethod.GET)
-    public ResponseEntity<?> getActiveTasks() {
+    @RequestMapping(value = "/getActiveTasks", method = RequestMethod.GET) public ResponseEntity<?> getActiveTasks() {
         HashMap<String, String> response = new HashMap<>();
 
         List<Task> tasks = activitiService.getActiveTasks();
@@ -200,13 +203,13 @@ import java.util.Map;
             taskIds.add(task.getId());
         }
         response.put("status", "success");
-        response.put("message",
-            "get active task list success");
+        response.put("message", "get active task list success");
         response.put("taskIds", taskIds.toString());
-        response.put("taskCounts",tasks.size()+"");
+        response.put("taskCounts", tasks.size() + "");
         logger.info(response.toString());
         return ResponseEntity.status(HttpStatus.OK).body(JSON.toJSONString(response));
     }
+
     /**
      * 认领任务
      *
@@ -234,6 +237,7 @@ import java.util.Map;
 
     /**
      * 完成任务
+     *
      * @param variables
      * @param processDefinitionId
      * @param processInstanceId

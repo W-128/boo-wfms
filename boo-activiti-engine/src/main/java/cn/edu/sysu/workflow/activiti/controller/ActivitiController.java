@@ -273,8 +273,9 @@ import java.util.Map;
         Task task = taskService.createTaskQuery().taskId(taskId).singleResult();
         activitiService.completeTask(taskId);
         response.put("status", "success");
-        response.put("message", "complete task of taskId " + taskId);
+        response.put("taskId", taskId);
         response.put("taskName", task.getName());
+        response.put("processInstanceId",task.getProcessInstanceId());
         logger.info(response.toString());
         return ResponseEntity.status(HttpStatus.OK).body(JSON.toJSONString(response));
     }

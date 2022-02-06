@@ -16,7 +16,7 @@ import java.util.concurrent.*;
 public class Buffer {
     private static Logger logger = LoggerFactory.getLogger(Buffer.class);
 
-    ConcurrentLinkedQueue<ActivitiTask> bufferPool;
+    ConcurrentLinkedQueue<FutureTask> bufferPool;
     private static Buffer BUFFER_INSTANCE;
     private ScheduledExecutorService customerThreadPool;
     private ExecutorService workerThreadPool;
@@ -55,20 +55,20 @@ public class Buffer {
 //        }
 
         for (int i = 0; i < REQUST_THRESHOLD; i++) {
-            ActivitiTask activitiTask=bufferPool.poll();
-            if (activitiTask==null){
+            FutureTask futureTask=bufferPool.poll();
+            if (futureTask==null){
                 break;
             }
             else{
                 logger.debug("提交一个activitiTask");
-                workerThreadPool.submit(activitiTask);
+                workerThreadPool.submit(futureTask);
             }
         }
     }
 
-    public void produce(ActivitiTask activitiTask) {
+    public void produce(FutureTask futureTask) {
         logger.debug("生产一个activitiTask");
-        bufferPool.offer(activitiTask);
+        bufferPool.offer(futureTask);
 
     }
 }

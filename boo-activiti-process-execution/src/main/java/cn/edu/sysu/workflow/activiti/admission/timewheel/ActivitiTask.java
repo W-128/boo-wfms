@@ -7,7 +7,11 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
 
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.concurrent.Callable;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
@@ -16,7 +20,7 @@ import java.util.concurrent.atomic.AtomicInteger;
  * @author: Gordan Lin
  * @create: 2019/12/13
  **/
-public class ActivitiTask implements Runnable {
+public class ActivitiTask implements Callable<ResponseEntity<String>> {
 
     private static Logger logger = LoggerFactory.getLogger(ActivitiTask.class);
 
@@ -31,7 +35,6 @@ public class ActivitiTask implements Runnable {
     private String taskName;
 
     private long startTime;
-
 
     public long getStartTime() {
         return startTime;
@@ -55,7 +58,6 @@ public class ActivitiTask implements Runnable {
         this.startTime = startTime;
     }
 
-
     public ActivitiTask(String url, MultiValueMap<String, Object> variables, RestTemplate restTemplate,
         long startTime) {
         this.url = url;
@@ -64,21 +66,26 @@ public class ActivitiTask implements Runnable {
         this.startTime = startTime;
     }
 
-    @Override public void run() {
-        try {
-            long waitEndTime = System.currentTimeMillis();
-            logger.debug("activitiTask里restTemplate实例" + restTemplate.toString());
-            ResponseEntity<String> result = restTemplate.getForEntity(url, String.class);
-            long end = System.currentTimeMillis();
-            int rtl = (Integer)variables.get("rtl").get(0);
-            //logger.info("activiti engine response time: " + (end - waitEndTime) + "ms");
-            logger.info("rtllevel:" + rtl + " request response time: " + (end - this.startTime) + "ms");
-            logger.info(
-                "processInstanceId: " + processInstanceId + " taskName: " + taskName + " start: " + startTime + " end: " + end);
-
-        } catch (Exception e) {
-            e.printStackTrace();
+    @Override public ResponseEntity<String> call() {
+        long waitEndTime = System.currentTimeMillis();
+        ResponseEntity<String> result = restTemplate.getForEntity(url, String.class);
+        String body = result.getBody();
+        List<String> list = Arrays.asList(body.substring(1, body.length() - 1).split(","));
+        HashMap<String, String> bodys = new HashMap<>();
+        for (String s : list) {
+            String key = Arrays.asList(s.split(":")).get(0);
+            key = key.substring(1, key.length() - 1);
+            String value = Arrays.asList(s.split(":")).get(1);
+            value = value.substring(1, value.length() - 1);
+            bodys.put(key, value);
         }
+        long end = System.currentTimeMillis();
+        int rtl = (Integer)variables.get("rtl").get(0);
+        //logger.info("activiti engine response time: " + (end - waitEndTime) + "ms");
+        logger.info("rtllevel:" + rtl + " request response time: " + (end - this.startTime) + "ms");
+        logger.info(
+            "processInstanceId: " + bodys.get("processInstanceId") + " taskName: " + bodys.get("taskName") + " start: " + this.startTime + " end: " + end);
+        return result;
     }
 
 }

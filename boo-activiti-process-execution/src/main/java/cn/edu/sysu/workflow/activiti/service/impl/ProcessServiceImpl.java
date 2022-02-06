@@ -18,16 +18,17 @@ import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
 import org.activiti.engine.task.Task;
 
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.concurrent.FutureTask;
 
 @Service public class ProcessServiceImpl implements ProcessService, InitializingBean {
 
     private static Logger logger = LoggerFactory.getLogger(ProcessService.class);
 
     @Autowired RestTemplate restTemplate;
-
-    @Autowired TaskService taskService;
 
     private final String URL_PREFIX = "http://activiti-engine/activiti-engine";
 
@@ -88,92 +89,64 @@ import java.util.Map;
     }
 
     // 不延迟
-    @Override public ResponseEntity<?> completeTask(String taskId, String processDefinitionId, String processInstanceId,
-        Map<String, Object> variables) {
+    @Override public ResponseEntity<?> completeTask(String taskId, Map<String, Object> variables) {
         long start = System.currentTimeMillis();
         int rtl = (Integer)variables.get("rtl");
         String url = URL_PREFIX + "/completeTask/" + taskId;
         MultiValueMap<String, Object> valueMap = CommonUtil.map2MultiValueMap(variables);
         ResponseEntity<String> result = restTemplate.getForEntity(url, String.class);
-        long end = System.currentTimeMillis();
-        logger.info("rtllevel:" + rtl + " completeTask request response time: " + (end - start) + "ms");
-        return result;
-    }
-
-    public ResponseEntity<?> completeTask(String taskId, Map<String, Object> variables) {
-        Task task = taskService.createTaskQuery().taskId(taskId).singleResult();
-        String processInstanceId = task.getProcessInstanceId();
-        String taskName = task.getName();
-        long start = System.currentTimeMillis();
-        int rtl = (Integer)variables.get("rtl");
-        String url = URL_PREFIX + "/completeTask/" + taskId;
-        MultiValueMap<String, Object> valueMap = CommonUtil.map2MultiValueMap(variables);
-        logger.debug("completeTask的restTemplate实例" + restTemplate.toString());
-        ResponseEntity<String> result = restTemplate.getForEntity(url, String.class);
+        String[] strings=getProcessInstanceIdAndTaskName(result);
         long end = System.currentTimeMillis();
         logger.info("rtllevel:" + rtl + " completeTask request response time: " + (end - start) + "ms");
         logger.info(
-            "processInstanceId: " + processInstanceId + " taskName: " + taskName + " start: " + start + " end: " + end);
+            "processInstanceId: " + strings[0] + " taskName: " + strings[1] + " start: " + start + " end: " + end);
         return result;
     }
 
-    public ResponseEntity<?> completeTaskWithFIFOBuffer(String taskId, Map<String, Object> variables) {
-        Task task = taskService.createTaskQuery().taskId(taskId).singleResult();
-        String processInstanceId = task.getProcessInstanceId();
-        String taskName = task.getName();
+    @Override public ResponseEntity<?> completeTaskWithFIFOBuffer(String taskId, Map<String, Object> variables) {
         long start = System.currentTimeMillis();
         int rtl = (Integer)variables.get("rtl");
         String url = URL_PREFIX + "/completeTask/" + taskId;
         MultiValueMap<String, Object> valueMap = CommonUtil.map2MultiValueMap(variables);
-        ActivitiTask activitiTask = new ActivitiTask(url, valueMap, restTemplate, processInstanceId, taskName, start);
-        Buffer.getInstance().produce(activitiTask);
-        return ResponseEntity.ok("请求已加入FIFO缓冲池");
+        ActivitiTask activitiTask = new ActivitiTask(url, valueMap, restTemplate,start);
+        FutureTask<ResponseEntity<String>> futureTask = new FutureTask<>(activitiTask);
+        Buffer.getInstance().produce(futureTask);
+        ResponseEntity<String> result = null;
+        try {
+            result = futureTask.get();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return result;
 
     }
 
-    //延迟请求
-    public ResponseEntity<?> completeTaskWithDelay(String taskId, String processDefinitionId, String processInstanceId,
-        Map<String, Object> variables) {
-        //获取租户SLA级别定义
-        //        int rar = (Integer)variables.get("rar");
-        int rtl = (Integer)variables.get("rtl");
+    //    @Override public ResponseEntity<?> completeTaskWithDelay(String taskId, Map<String, Object> variables) {
+    //        //获取租户SLA级别定义
+    //        int rtl = (Integer)variables.get("rtl");
+    //
+    //        long start = System.currentTimeMillis();
+    //        String url = URL_PREFIX + "/completeTask/" + taskId;
+    //        MultiValueMap<String, Object> valueMap = CommonUtil.map2MultiValueMap(variables);
+    //        ActivitiTask activitiTask = new ActivitiTask(url, valueMap, restTemplate, start);
+    //        activitiTask.setStartTime(start);
+    //        TimerTask timerTask = new TimerTask(rtl * SLALimit.RESPONSE_TIME_PER_LEVEL, activitiTask, rtl);
+    //        Timer.getInstance().addTask(timerTask);
+    //
+    //        return ResponseEntity.ok("请求已加入时间槽");
+    //    }
 
-        //        RateLimiter limiter = null;
-        //        try {
-        //            // key要求：tenantId-rarLevel
-        //            limiter = SLALimit.requestRateLimiterCaches.get("test-"+rar);
-        //        } catch (ExecutionException e) {
-        //            e.printStackTrace();
-        //        }
-        //        if (!limiter.tryAcquire()) {
-        //            logger.error("rar："+rar+" rtl："+rtl);
-        //            logger.error("流程定义："+processDefinitionId+" 流程实例："+processInstanceId+" 任务："+taskId+" 请求由于限流被拒绝");
-        //            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("请求由于限流被拒绝");
-        //        }
-        long start = System.currentTimeMillis();
-        String url = URL_PREFIX + "/completeTask/" + taskId;
-        MultiValueMap<String, Object> valueMap = CommonUtil.map2MultiValueMap(variables);
-        ActivitiTask activitiTask = new ActivitiTask(url, valueMap, restTemplate, start);
-        activitiTask.setStartTime(start);
-        TimerTask timerTask = new TimerTask(rtl * SLALimit.RESPONSE_TIME_PER_LEVEL, activitiTask, rtl);
-        Timer.getInstance().addTask(timerTask);
-
-        return ResponseEntity.ok("请求正在调度中");
+    public String[] getProcessInstanceIdAndTaskName(ResponseEntity<String> result) {
+        String body = result.getBody();
+        List<String> list = Arrays.asList(body.substring(1, body.length() - 1).split(","));
+        HashMap<String, String> bodys = new HashMap<>();
+        for (String s : list) {
+            String key = Arrays.asList(s.split(":")).get(0);
+            key = key.substring(1, key.length() - 1);
+            String value = Arrays.asList(s.split(":")).get(1);
+            value = value.substring(1, value.length() - 1);
+            bodys.put(key, value);
+        }
+        return new String[] {bodys.get("processInstanceId"), bodys.get("taskName")};
     }
-
-    public ResponseEntity<?> completeTaskWithDelay(String taskId, Map<String, Object> variables) {
-        //获取租户SLA级别定义
-        int rtl = (Integer)variables.get("rtl");
-
-        long start = System.currentTimeMillis();
-        String url = URL_PREFIX + "/completeTask/" + taskId;
-        MultiValueMap<String, Object> valueMap = CommonUtil.map2MultiValueMap(variables);
-        ActivitiTask activitiTask = new ActivitiTask(url, valueMap, restTemplate, start);
-        activitiTask.setStartTime(start);
-        TimerTask timerTask = new TimerTask(rtl * SLALimit.RESPONSE_TIME_PER_LEVEL, activitiTask, rtl);
-        Timer.getInstance().addTask(timerTask);
-
-        return ResponseEntity.ok("请求已加入时间槽");
-    }
-
 }
