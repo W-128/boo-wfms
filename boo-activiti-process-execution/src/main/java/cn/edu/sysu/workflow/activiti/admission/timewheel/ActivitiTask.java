@@ -1,5 +1,6 @@
 package cn.edu.sysu.workflow.activiti.admission.timewheel;
 
+import cn.edu.sysu.workflow.activiti.util.NextTaskArriveTimeIntervalUtil;
 import com.netflix.loadbalancer.RandomRule;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -81,10 +82,13 @@ public class ActivitiTask implements Callable<ResponseEntity<String>> {
         }
         long end = System.currentTimeMillis();
         int rtl = (Integer)variables.get("rtl").get(0);
+        String taskName=bodys.get("taskName");
         //logger.info("activiti engine response time: " + (end - waitEndTime) + "ms");
         logger.info("rtllevel:" + rtl + " request response time: " + (end - this.startTime) + "ms");
         logger.info(
-            "processInstanceId: " + bodys.get("processInstanceId") + " taskName: " + bodys.get("taskName") + " start: " + this.startTime + " end: " + end);
+            "processInstanceId: " + bodys.get("processInstanceId") + " taskName: " +  taskName+ " start: " + this.startTime + " end: " + end);
+        int nextTaskArriveTime=NextTaskArriveTimeIntervalUtil.getInstance().getNextTaskArriveTimeInterval((taskName));
+        Timer.getInstance().addToPredictTimeWindow(nextTaskArriveTime);
         return result;
     }
 

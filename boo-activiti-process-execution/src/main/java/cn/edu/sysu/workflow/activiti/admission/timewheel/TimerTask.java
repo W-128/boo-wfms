@@ -1,5 +1,10 @@
 package cn.edu.sysu.workflow.activiti.admission.timewheel;
 
+import org.springframework.http.ResponseEntity;
+
+import java.util.concurrent.Callable;
+import java.util.concurrent.FutureTask;
+
 /**
  * 需要延迟执行的任务，放在Bucket里
  *
@@ -16,7 +21,7 @@ public class TimerTask implements Comparable<TimerTask> {
     private long delayMs;
 
     // 任务
-    private Runnable task;
+    private FutureTask futureTask;
 
     //入缓存队列时才会用到expirationMs
     private long expirationMs;
@@ -31,9 +36,9 @@ public class TimerTask implements Comparable<TimerTask> {
 
     private int rtl;
 
-    public TimerTask(long delayMs, Runnable task, int rtl) {
+    public TimerTask(long delayMs, FutureTask futureTask, int rtl) {
         this.delayMs = delayMs;
-        this.task = task;
+        this.futureTask = futureTask;
         this.rtl = rtl;
     }
 
@@ -41,8 +46,8 @@ public class TimerTask implements Comparable<TimerTask> {
         return delayMs;
     }
 
-    public Runnable getTask() {
-        return task;
+    public FutureTask getTask() {
+        return futureTask;
     }
 
     public long getExpirationMs() {

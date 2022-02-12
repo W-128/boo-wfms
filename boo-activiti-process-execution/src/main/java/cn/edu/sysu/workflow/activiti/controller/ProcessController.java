@@ -206,7 +206,7 @@ public class ProcessController {
         //完成任务
         return processService.completeTask(taskId,variables);
     }
-    //完成任务
+    //FIFO完成任务
     @RequestMapping(value = "/completeTaskWithFIFOBuffer/{taskId}", method = RequestMethod.POST)
     public ResponseEntity<?> completeTaskWithFIFOBuffer(@RequestParam(required = false) Map<String, Object> variables,
         @PathVariable(value = "taskId", required = false) String taskId) {
@@ -229,29 +229,29 @@ public class ProcessController {
         return processService.completeTaskWithFIFOBuffer(taskId,variables);
     }
 
-//    //延时完成任务
-//    @RequestMapping(value = "/completeTaskWithDelayWithTaskId/{taskId}", method = RequestMethod.POST)
-//    public ResponseEntity<?> completeTaskWithDelayWithTaskId(@RequestParam(required = false) Map<String, Object> variables,
-//        @PathVariable(value = "taskId", required = false) String taskId) {
-//
-//        HashMap<String, String> response = new HashMap<>();
-//
-//        //校验参数
-//        ArrayList<String> missingParams = new ArrayList<>();
-//        if (variables == null) missingParams.add("variables");
-//        if (taskId == null) missingParams.add("taskId");
-//        if (missingParams.size() > 0) {
-//            response.put("status", "fail");
-//            response.put("message", "required parameters missing: " + CommonUtil.ArrayList2String(missingParams, " "));
-//            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(JSON.toJSONString(response));
-//        }
-//
-//        for(Map.Entry<String, Object> entry : variables.entrySet()) {
-//            variables.put(entry.getKey(), JSON.parseObject((String) entry.getValue(), Object.class));
-//        }
-//        logger.info("completeTaskWithDelay");
-//
-//        //完成任务
-//        return processService.completeTaskWithDelay(taskId,variables);
-//    }
+    //削峰添谷完成任务
+    @RequestMapping(value = "/completeTaskWithDelayWithTaskId/{taskId}", method = RequestMethod.POST)
+    public ResponseEntity<?> completeTaskWithDelayWithTaskId(@RequestParam(required = false) Map<String, Object> variables,
+        @PathVariable(value = "taskId", required = false) String taskId) {
+
+        HashMap<String, String> response = new HashMap<>();
+
+        //校验参数
+        ArrayList<String> missingParams = new ArrayList<>();
+        if (variables == null) missingParams.add("variables");
+        if (taskId == null) missingParams.add("taskId");
+        if (missingParams.size() > 0) {
+            response.put("status", "fail");
+            response.put("message", "required parameters missing: " + CommonUtil.ArrayList2String(missingParams, " "));
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(JSON.toJSONString(response));
+        }
+
+        for(Map.Entry<String, Object> entry : variables.entrySet()) {
+            variables.put(entry.getKey(), JSON.parseObject((String) entry.getValue(), Object.class));
+        }
+        logger.info("completeTaskWithDelay");
+
+        //完成任务
+        return processService.completeTaskWithDelay(taskId,variables);
+    }
 }

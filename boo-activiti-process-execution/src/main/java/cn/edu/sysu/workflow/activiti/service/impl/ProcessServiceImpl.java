@@ -121,20 +121,26 @@ import java.util.concurrent.FutureTask;
 
     }
 
-    //    @Override public ResponseEntity<?> completeTaskWithDelay(String taskId, Map<String, Object> variables) {
-    //        //获取租户SLA级别定义
-    //        int rtl = (Integer)variables.get("rtl");
-    //
-    //        long start = System.currentTimeMillis();
-    //        String url = URL_PREFIX + "/completeTask/" + taskId;
-    //        MultiValueMap<String, Object> valueMap = CommonUtil.map2MultiValueMap(variables);
-    //        ActivitiTask activitiTask = new ActivitiTask(url, valueMap, restTemplate, start);
-    //        activitiTask.setStartTime(start);
-    //        TimerTask timerTask = new TimerTask(rtl * SLALimit.RESPONSE_TIME_PER_LEVEL, activitiTask, rtl);
-    //        Timer.getInstance().addTask(timerTask);
-    //
-    //        return ResponseEntity.ok("请求已加入时间槽");
-    //    }
+    @Override public ResponseEntity<?> completeTaskWithDelay(String taskId, Map<String, Object> variables) {
+        //获取租户SLA级别定义
+        int rtl = (Integer)variables.get("rtl");
+
+        long start = System.currentTimeMillis();
+        String url = URL_PREFIX + "/completeTask/" + taskId;
+        MultiValueMap<String, Object> valueMap = CommonUtil.map2MultiValueMap(variables);
+        ActivitiTask activitiTask = new ActivitiTask(url, valueMap, restTemplate, start);
+        activitiTask.setStartTime(start);
+        FutureTask<ResponseEntity<String>> futureTask = new FutureTask<>(activitiTask);
+        TimerTask timerTask = new TimerTask(rtl * SLALimit.RESPONSE_TIME_PER_LEVEL, futureTask, rtl);
+        Timer.getInstance().addTask(timerTask);
+        ResponseEntity<String> result = null;
+        try {
+            result = futureTask.get();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return result;
+    }
 
     public String[] getProcessInstanceIdAndTaskName(ResponseEntity<String> result) {
         String body = result.getBody();

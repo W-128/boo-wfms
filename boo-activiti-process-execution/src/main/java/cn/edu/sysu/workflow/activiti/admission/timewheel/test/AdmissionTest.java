@@ -7,11 +7,14 @@ import com.google.common.util.concurrent.RateLimiter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.persistence.criteria.CriteriaBuilder;
 import javax.xml.bind.SchemaOutputResolver;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.PriorityBlockingQueue;
 import java.util.stream.IntStream;
 
 /**
@@ -45,6 +48,14 @@ public class AdmissionTest  {
 //        Timer.getInstance().addTask(timerTask7);
 //        Thresholdtest();
 //        Delay0RateLimiterTest();
+//        ArrayList<Integer> arrayList=new ArrayList<>();
+//        arrayList.add(0,1);
+//        CopyOnWriteArrayList<Integer> copyOnWriteArrayList=new CopyOnWriteArrayList<>();
+//        copyOnWriteArrayList.add(10,1);
+//        int a=copyOnWriteArrayList.get(1);
+//        System.out.println(a);
+        PriorityBlockingQueueTest();
+
 
     }
 
@@ -105,4 +116,11 @@ public class AdmissionTest  {
 //
 //
 //    }
+
+
+    public static void PriorityBlockingQueueTest() {
+        PriorityBlockingQueue<Integer> priorityBlockingQueue = new PriorityBlockingQueue<>();
+        Integer integer = priorityBlockingQueue.poll();
+        return;
+    }
 }

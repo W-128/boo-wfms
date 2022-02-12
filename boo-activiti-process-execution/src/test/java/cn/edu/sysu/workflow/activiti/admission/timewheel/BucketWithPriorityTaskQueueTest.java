@@ -15,15 +15,15 @@ import static org.junit.Assert.*;
 public class BucketWithPriorityTaskQueueTest {
 
     @Test public void removeTaskAndGet() {
-        BucketWithPriorityTaskQueue bucketWithPriorityTaskQueue=new BucketWithPriorityTaskQueue(10);
-        bucketWithPriorityTaskQueue.addTask(new TimerTask(1000,new TestTask(),1));
-        bucketWithPriorityTaskQueue.addTask(new TimerTask(1000,new TestTask(),3));
-        bucketWithPriorityTaskQueue.addTask(new TimerTask(1000,new TestTask(),2));
-
-        List<TimerTask> taskList=bucketWithPriorityTaskQueue.removeTaskAndGet(2);
-        for (TimerTask timerTask : taskList) {
-            System.out.println(timerTask.getRtl());
-        }
-        System.out.println("===========");
+//        BucketWithPriorityTaskQueue bucketWithPriorityTaskQueue=new BucketWithPriorityTaskQueue(10);
+//        bucketWithPriorityTaskQueue.addTask(new TimerTask(1000,new TestTask(),1));
+//        bucketWithPriorityTaskQueue.addTask(new TimerTask(1000,new TestTask(),3));
+//        bucketWithPriorityTaskQueue.addTask(new TimerTask(1000,new TestTask(),2));
+//
+//        List<TimerTask> taskList=bucketWithPriorityTaskQueue.removeTaskAndGet(2);
+//        for (TimerTask timerTask : taskList) {
+//            System.out.println(timerTask.getRtl());
+//        }
+//        System.out.println("===========");
     }
 }
