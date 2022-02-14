@@ -4,6 +4,7 @@ import cn.edu.sysu.workflow.activiti.util.NextTaskArriveTimeIntervalUtil;
 import com.netflix.loadbalancer.RandomRule;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
@@ -70,26 +71,32 @@ public class ActivitiTask implements Callable<ResponseEntity<String>> {
     @Override public ResponseEntity<String> call() {
         long waitEndTime = System.currentTimeMillis();
         ResponseEntity<String> result = restTemplate.getForEntity(url, String.class);
-        String body = result.getBody();
-        List<String> list = Arrays.asList(body.substring(1, body.length() - 1).split(","));
-        HashMap<String, String> bodys = new HashMap<>();
-        for (String s : list) {
-            String key = Arrays.asList(s.split(":")).get(0);
-            key = key.substring(1, key.length() - 1);
-            String value = Arrays.asList(s.split(":")).get(1);
-            value = value.substring(1, value.length() - 1);
-            bodys.put(key, value);
+        if(result.getStatusCode()== HttpStatus.OK){
+            String body = result.getBody();
+            List<String> list = Arrays.asList(body.substring(1, body.length() - 1).split(","));
+            HashMap<String, String> bodys = new HashMap<>();
+            for (String s : list) {
+                String key = Arrays.asList(s.split(":")).get(0);
+                key = key.substring(1, key.length() - 1);
+                String value = Arrays.asList(s.split(":")).get(1);
+                value = value.substring(1, value.length() - 1);
+                bodys.put(key, value);
+            }
+            long end = System.currentTimeMillis();
+            int rtl = (Integer)variables.get("rtl").get(0);
+            String taskName=bodys.get("taskName");
+            //logger.info("activiti engine response time: " + (end - waitEndTime) + "ms");
+            logger.info("rtllevel:" + rtl + " request response time: " + (end - this.startTime) + "ms");
+            logger.info(
+                "processInstanceId: " + bodys.get("processInstanceId") + " taskName: " +  taskName+ " start: " + this.startTime + " end: " + end);
+            int nextTaskArriveTime=NextTaskArriveTimeIntervalUtil.getInstance().getNextTaskArriveTimeInterval((taskName));
+            Timer.getInstance().addToPredictTimeWindow(nextTaskArriveTime);
+            return result;
         }
-        long end = System.currentTimeMillis();
-        int rtl = (Integer)variables.get("rtl").get(0);
-        String taskName=bodys.get("taskName");
-        //logger.info("activiti engine response time: " + (end - waitEndTime) + "ms");
-        logger.info("rtllevel:" + rtl + " request response time: " + (end - this.startTime) + "ms");
-        logger.info(
-            "processInstanceId: " + bodys.get("processInstanceId") + " taskName: " +  taskName+ " start: " + this.startTime + " end: " + end);
-        int nextTaskArriveTime=NextTaskArriveTimeIntervalUtil.getInstance().getNextTaskArriveTimeInterval((taskName));
-        Timer.getInstance().addToPredictTimeWindow(nextTaskArriveTime);
-        return result;
+        else{
+            return  result;
+        }
+
     }
 
 }

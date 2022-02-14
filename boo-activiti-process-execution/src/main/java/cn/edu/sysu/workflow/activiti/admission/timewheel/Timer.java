@@ -271,6 +271,7 @@ public class Timer {
                     List<TimerTask> taskList = bucket.removeTaskAndGet(moveCount);
                     for (TimerTask timerTask : taskList) {
                         workerThreadPool.submit(timerTask.getTask());
+                        logger.info("提前提取时间槽内任务");
                     }
                     priorityQueue.offer(bucket);
                     return;
@@ -279,6 +280,7 @@ public class Timer {
                     for (TimerTask timerTask : taskList) {
                         workerThreadPool.submit(timerTask.getTask());
                         moveCount--;
+                        logger.info("提前提取时间槽内任务");
                     }
                     bucket = priorityQueue.poll();
                 }
