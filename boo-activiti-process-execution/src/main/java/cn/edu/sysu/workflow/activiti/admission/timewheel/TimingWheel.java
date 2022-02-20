@@ -65,7 +65,7 @@ public class TimingWheel {
             int bucketIndex = (int)(((delayMs - tickMs + currentTimestamp) / tickMs) % wheelSize);
             BucketWithPriorityTaskQueue bucket = buckets[bucketIndex];
             //未超过阈值
-            if (buckets[bucketIndex].getTaskNum() < requestThreshold) {
+            if (bucket.getTaskNum() < requestThreshold) {
                 logger.debug("未超过阈值");
                 logger.debug("bucketIndex:{}", bucketIndex);
                 bucket.addTask(timerTask);
@@ -75,6 +75,10 @@ public class TimingWheel {
                 if (bucket.setExpire(delayMs + currentTimestamp - (delayMs + currentTimestamp) % tickMs)) {
                     logger.debug("bucket[{}] 重设过期时间为:{}", bucketIndex,
                         delayMs + currentTimestamp - (delayMs + currentTimestamp) % tickMs);
+                    //重设bucket过期时间时，之前被覆盖的bucket中的任务肯定是提交完了，现在只有最新的一个任务
+                    if (bucket.getTaskNum()!=1){
+                        logger.warn("重设bucket过期时间,bucket中任务数不是一个。目前任务数为"+bucket.getTaskNum());
+                    }
                     priorityQueue.offer(bucket);
 
                     // 维护滑动时间窗口 启发式算法

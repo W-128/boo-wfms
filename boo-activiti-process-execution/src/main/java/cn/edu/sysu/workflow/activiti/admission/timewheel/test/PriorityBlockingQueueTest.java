@@ -11,8 +11,8 @@ import java.util.concurrent.PriorityBlockingQueue;
  */
 public class PriorityBlockingQueueTest {
     public static void main(String[] args) {
-        Person person1 = new Person(10, 5);
-        Person person2 = new Person(50, 1);
+        Person person1 = new Person(10, 1);
+        Person person2 = new Person(50, 5);
         PriorityBlockingQueue<Person> priorityBlockingQueue = new PriorityBlockingQueue();
         priorityBlockingQueue.add(person2);
         priorityBlockingQueue.add(person1);
