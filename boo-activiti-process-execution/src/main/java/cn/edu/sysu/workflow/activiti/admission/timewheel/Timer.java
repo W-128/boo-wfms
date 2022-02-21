@@ -304,7 +304,7 @@ public class Timer {
         //暂存队列为空
         if (bufferPriorityQueue.size() == 0) {
             if (isMove() == true) {
-                allSubmitTaskNum = move(taskNum);
+                allSubmitTaskNum = move(taskNum/2);
             }
         }
         //暂存队列中有
@@ -328,7 +328,7 @@ public class Timer {
             if (moveCount != 0) {
                 //判断是否要提前
                 if (isMove() == true) {
-                    allSubmitTaskNum = allSubmitTaskNum + move(moveCount);
+                    allSubmitTaskNum = allSubmitTaskNum + move(moveCount/2);
                 }
             }
 
