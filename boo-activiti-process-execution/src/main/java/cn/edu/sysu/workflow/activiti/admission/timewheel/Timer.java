@@ -201,7 +201,7 @@ public class Timer {
     }
 
     private int admittingWithThresholdAndSubmit() {
-        int allSubmitTaskNum=0;
+        int allSubmitTaskNum = 0;
         //从到期时间槽中提交
         List<TimerTask> taskList = null;
         BucketWithPriorityTaskQueue bucket = priorityQueue.poll();
@@ -211,7 +211,7 @@ public class Timer {
             workerThreadPool.submit(timerTask.getTask());
             allSubmitTaskNum++;
         }
-        allSubmitTaskNum=allSubmitTaskNum+submitTaskFromBufferPriorityQueue(remainTaskNum);
+        allSubmitTaskNum = allSubmitTaskNum + submitTaskFromBufferPriorityQueue(remainTaskNum);
         return allSubmitTaskNum;
     }
 
@@ -226,7 +226,7 @@ public class Timer {
             predictTimeWindow[i] = predictTimeWindow[i + 1];
         }
         predictTimeWindow[PREDICT_LENGTH - 1] = 0;
-        logger.info("预测时间窗为: " + predictTimeWindowToString());
+        //        logger.info("预测时间窗为: " + predictTimeWindowToString());
 
     }
 
@@ -257,7 +257,7 @@ public class Timer {
     }
 
     public int move(int moveCount) {
-        int alreadyMoveCount=0;
+        int alreadyMoveCount = 0;
         if (moveCount == 0) {
             return alreadyMoveCount;
         }
@@ -265,30 +265,32 @@ public class Timer {
         if (priorityQueue.size() == 0) {
             return alreadyMoveCount;
         }
-        BucketWithPriorityTaskQueue bucket = priorityQueue.peek();
-        while (moveCount != 0) {
+//        while (moveCount != 0) {
+//            BucketWithPriorityTaskQueue bucket = priorityQueue.peek();
+//            if (bucket == null) {
+//                return alreadyMoveCount;
+//            } else {
+//                //bucket不为空
+//                List<TimerTask> taskList = bucket.removeTaskAndGet(moveCount);
+//                for (TimerTask timerTask : taskList) {
+//                    workerThreadPool.submit(timerTask.getTask());
+//                    alreadyMoveCount++;
+//                    moveCount--;
+//                    logger.info("提前提取时间槽内任务");
+//                }
+//            }
+//        }
+        if (moveCount != 0) {
+            BucketWithPriorityTaskQueue bucket = priorityQueue.peek();
             if (bucket == null) {
                 return alreadyMoveCount;
             } else {
                 //bucket不为空
-                if (bucket.getTaskNum() > moveCount) {
-                    List<TimerTask> taskList = bucket.removeTaskAndGet(moveCount);
-                    for (TimerTask timerTask : taskList) {
-                        workerThreadPool.submit(timerTask.getTask());
-                        alreadyMoveCount++;
-                        logger.info("提前提取时间槽内任务");
-                    }
-                    return alreadyMoveCount;
-                } else {
-                    bucket = priorityQueue.poll();
-                    List<TimerTask> taskList = bucket.removeTaskAndGet(-1);
-                    for (TimerTask timerTask : taskList) {
-                        workerThreadPool.submit(timerTask.getTask());
-                        alreadyMoveCount++;
-                        moveCount--;
-                        logger.info("提前提取时间槽内任务");
-                    }
-                    bucket = priorityQueue.peek();
+                List<TimerTask> taskList = bucket.removeTaskAndGet(moveCount);
+                for (TimerTask timerTask : taskList) {
+                    workerThreadPool.submit(timerTask.getTask());
+                    alreadyMoveCount++;
+                    logger.info("提前提取时间槽内任务");
                 }
             }
         }
@@ -304,7 +306,7 @@ public class Timer {
         //暂存队列为空
         if (bufferPriorityQueue.size() == 0) {
             if (isMove() == true) {
-                allSubmitTaskNum = move(taskNum/2);
+                allSubmitTaskNum = move(taskNum);
             }
         }
         //暂存队列中有
@@ -328,7 +330,7 @@ public class Timer {
             if (moveCount != 0) {
                 //判断是否要提前
                 if (isMove() == true) {
-                    allSubmitTaskNum = allSubmitTaskNum + move(moveCount/2);
+                    allSubmitTaskNum = allSubmitTaskNum + move(moveCount);
                 }
             }
 
