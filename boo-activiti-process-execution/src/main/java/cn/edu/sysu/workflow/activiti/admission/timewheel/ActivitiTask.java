@@ -38,6 +38,8 @@ public class ActivitiTask implements Callable<ResponseEntity<String>> {
 
     private long startTime;
 
+    private int rtl;
+
     public long getStartTime() {
         return startTime;
     }
@@ -51,27 +53,29 @@ public class ActivitiTask implements Callable<ResponseEntity<String>> {
     }
 
     public ActivitiTask(String url, MultiValueMap<String, Object> variables, RestTemplate restTemplate,
-        String processInstanceId, String taskName, long startTime) {
+        String processInstanceId, String taskName, long startTime, int rtl) {
         this.url = url;
         this.variables = variables;
         this.restTemplate = restTemplate;
         this.processInstanceId = processInstanceId;
         this.taskName = taskName;
         this.startTime = startTime;
+        this.rtl = rtl;
     }
 
-    public ActivitiTask(String url, MultiValueMap<String, Object> variables, RestTemplate restTemplate,
-        long startTime) {
+    public ActivitiTask(String url, MultiValueMap<String, Object> variables, RestTemplate restTemplate, long startTime,
+        int rtl) {
         this.url = url;
         this.variables = variables;
         this.restTemplate = restTemplate;
         this.startTime = startTime;
+        this.rtl = rtl;
     }
 
     @Override public ResponseEntity<String> call() {
         long waitEndTime = System.currentTimeMillis();
         ResponseEntity<String> result = restTemplate.getForEntity(url, String.class);
-        if(result.getStatusCode()== HttpStatus.OK){
+        if (result.getStatusCode() == HttpStatus.OK) {
             String body = result.getBody();
             List<String> list = Arrays.asList(body.substring(1, body.length() - 1).split(","));
             HashMap<String, String> bodys = new HashMap<>();
@@ -84,17 +88,17 @@ public class ActivitiTask implements Callable<ResponseEntity<String>> {
             }
             long end = System.currentTimeMillis();
             int rtl = (Integer)variables.get("rtl").get(0);
-            String taskName=bodys.get("taskName");
+            String taskName = bodys.get("taskName");
             //logger.info("activiti engine response time: " + (end - waitEndTime) + "ms");
             logger.info("rtllevel:" + rtl + " request response time: " + (end - this.startTime) + "ms");
-            logger.info(
-                "processInstanceId: " + bodys.get("processInstanceId") + " taskName: " +  taskName+ " start: " + this.startTime + " end: " + end);
-            int nextTaskArriveTime=NextTaskArriveTimeIntervalUtil.getInstance().getNextTaskArriveTimeInterval((taskName));
+            logger.info("processInstanceId: " + bodys.get("processInstanceId") + " taskName: " + taskName + " start: "
+                + this.startTime + " end: " + end);
+            int nextTaskArriveTime =
+                NextTaskArriveTimeIntervalUtil.getInstance().getNextTaskArriveTimeInterval((taskName)) + rtl;
             Timer.getInstance().addToPredictTimeWindow(nextTaskArriveTime);
             return result;
-        }
-        else{
-            return  result;
+        } else {
+            return result;
         }
 
     }

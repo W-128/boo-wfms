@@ -240,10 +240,10 @@ public class Timer {
 
     public double getMeanEleMeantPredictTimeWindow() {
         double sum = 0;
-        for (int i = 0; i < 10; i++) {
+        for (int i = 0; i < PREDICT_LENGTH; i++) {
             sum = sum + predictTimeWindow[i];
         }
-        return sum / 10;
+        return sum / PREDICT_LENGTH;
     }
 
     public boolean isMove() {
