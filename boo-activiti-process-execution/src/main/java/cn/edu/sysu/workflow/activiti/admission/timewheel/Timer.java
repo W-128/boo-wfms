@@ -265,35 +265,40 @@ public class Timer {
         if (priorityQueue.size() == 0) {
             return alreadyMoveCount;
         }
-//        while (moveCount != 0) {
-//            BucketWithPriorityTaskQueue bucket = priorityQueue.peek();
-//            if (bucket == null) {
-//                return alreadyMoveCount;
-//            } else {
-//                //bucket不为空
-//                List<TimerTask> taskList = bucket.removeTaskAndGet(moveCount);
-//                for (TimerTask timerTask : taskList) {
-//                    workerThreadPool.submit(timerTask.getTask());
-//                    alreadyMoveCount++;
-//                    moveCount--;
-//                    logger.info("提前提取时间槽内任务");
-//                }
-//            }
-//        }
-        if (moveCount != 0) {
+        //提前最多PREDICT_LENGTH个时间槽
+        int i = 0;
+        while (moveCount != 0 && i < PREDICT_LENGTH) {
             BucketWithPriorityTaskQueue bucket = priorityQueue.peek();
             if (bucket == null) {
                 return alreadyMoveCount;
             } else {
                 //bucket不为空
                 List<TimerTask> taskList = bucket.removeTaskAndGet(moveCount);
+                i++;
                 for (TimerTask timerTask : taskList) {
                     workerThreadPool.submit(timerTask.getTask());
                     alreadyMoveCount++;
+                    moveCount--;
                     logger.info("提前提取时间槽内任务");
                 }
             }
         }
+
+        //提前一个时间槽
+        //        if (moveCount != 0) {
+        //            BucketWithPriorityTaskQueue bucket = priorityQueue.peek();
+        //            if (bucket == null) {
+        //                return alreadyMoveCount;
+        //            } else {
+        //                //bucket不为空
+        //                List<TimerTask> taskList = bucket.removeTaskAndGet(moveCount);
+        //                for (TimerTask timerTask : taskList) {
+        //                    workerThreadPool.submit(timerTask.getTask());
+        //                    alreadyMoveCount++;
+        //                    logger.info("提前提取时间槽内任务");
+        //                }
+        //            }
+        //        }
         return alreadyMoveCount;
     }
 
