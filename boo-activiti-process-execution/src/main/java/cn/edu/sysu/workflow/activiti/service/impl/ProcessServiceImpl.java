@@ -89,11 +89,10 @@ import java.util.concurrent.FutureTask;
     }
 
     // 不延迟
-    @Override public ResponseEntity<?> completeTask(String taskId, Map<String, Object> variables) {
+    @Override public ResponseEntity<?> completeTask(String taskId, Map<String, String> variables) {
         long start = System.currentTimeMillis();
-        int rtl = (Integer)variables.get("rtl");
+        int rtl = Integer.parseInt(variables.get("rtl"));
         String url = URL_PREFIX + "/completeTask/" + taskId;
-        MultiValueMap<String, Object> valueMap = CommonUtil.map2MultiValueMap(variables);
         ResponseEntity<String> result = restTemplate.getForEntity(url, String.class);
         String[] strings = getProcessInstanceIdAndTaskName(result);
         long end = System.currentTimeMillis();
@@ -103,12 +102,11 @@ import java.util.concurrent.FutureTask;
         return result;
     }
 
-    @Override public ResponseEntity<?> completeTaskWithFIFOBuffer(String taskId, Map<String, Object> variables) {
+    @Override public ResponseEntity<?> completeTaskWithFIFOBuffer(String taskId, Map<String, String> variables) {
         long start = System.currentTimeMillis();
-        int rtl = (Integer)variables.get("rtl");
+        int rtl = Integer.parseInt(variables.get("rtl"));
         String url = URL_PREFIX + "/completeTask/" + taskId;
-        MultiValueMap<String, Object> valueMap = CommonUtil.map2MultiValueMap(variables);
-        ActivitiTask activitiTask = new ActivitiTask(url, valueMap, restTemplate, start, rtl);
+        ActivitiTask activitiTask = new ActivitiTask(url, restTemplate, start, rtl);
         FutureTask<ResponseEntity<String>> futureTask = new FutureTask<>(activitiTask);
         Buffer.getInstance().produce(futureTask);
         ResponseEntity<String> result = null;
@@ -121,17 +119,16 @@ import java.util.concurrent.FutureTask;
 
     }
 
-    @Override public ResponseEntity<?> completeTaskWithDelay(String taskId, Map<String, Object> variables) {
+    @Override public ResponseEntity<?> completeTaskWithDelay(String taskId, Map<String, String> variables) {
         //获取租户SLA级别定义
-        int rtl = (Integer)variables.get("rtl");
-
+        int rtl = Integer.parseInt(variables.get("rtl"));
+        String tenantId = variables.get("tenantId");
         long start = System.currentTimeMillis();
         String url = URL_PREFIX + "/completeTask/" + taskId;
-        MultiValueMap<String, Object> valueMap = CommonUtil.map2MultiValueMap(variables);
-        ActivitiTask activitiTask = new ActivitiTask(url, valueMap, restTemplate, start, rtl);
+        ActivitiTask activitiTask = new ActivitiTask(url, restTemplate, start, rtl);
         activitiTask.setStartTime(start);
         FutureTask<ResponseEntity<String>> futureTask = new FutureTask<>(activitiTask);
-        TimerTask timerTask = new TimerTask(rtl * SLALimit.RESPONSE_TIME_PER_LEVEL, futureTask, rtl);
+        TimerTask timerTask = new TimerTask(rtl * SLALimit.RESPONSE_TIME_PER_LEVEL, futureTask, rtl, tenantId);
         Timer.getInstance().addTask(timerTask);
         ResponseEntity<String> result = null;
         try {

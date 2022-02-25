@@ -26,6 +26,16 @@ public class TimerTask implements Comparable<TimerTask> {
     //入缓存队列时才会用到expirationMs
     private long expirationMs;
 
+    public String getTenantId() {
+        return tenantId;
+    }
+
+    public void setTenantId(String tenantId) {
+        this.tenantId = tenantId;
+    }
+
+    private String tenantId;
+
     public int getRtl() {
         return rtl;
     }
@@ -36,10 +46,11 @@ public class TimerTask implements Comparable<TimerTask> {
 
     private int rtl;
 
-    public TimerTask(long delayMs, FutureTask futureTask, int rtl) {
+    public TimerTask(long delayMs, FutureTask futureTask, int rtl, String tenantId) {
         this.delayMs = delayMs;
         this.futureTask = futureTask;
         this.rtl = rtl;
+        this.tenantId = tenantId;
     }
 
     public long getDelayMs() {

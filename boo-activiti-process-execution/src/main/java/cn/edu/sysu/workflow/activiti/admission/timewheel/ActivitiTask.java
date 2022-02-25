@@ -72,6 +72,13 @@ public class ActivitiTask implements Callable<ResponseEntity<String>> {
         this.rtl = rtl;
     }
 
+    public ActivitiTask(String url, RestTemplate restTemplate, long start, int rtl) {
+        this.url = url;
+        this.restTemplate = restTemplate;
+        this.startTime = start;
+        this.rtl = rtl;
+    }
+
     @Override public ResponseEntity<String> call() {
         long waitEndTime = System.currentTimeMillis();
         ResponseEntity<String> result = restTemplate.getForEntity(url, String.class);
@@ -87,7 +94,6 @@ public class ActivitiTask implements Callable<ResponseEntity<String>> {
                 bodys.put(key, value);
             }
             long end = System.currentTimeMillis();
-            int rtl = (Integer)variables.get("rtl").get(0);
             String taskName = bodys.get("taskName");
             //logger.info("activiti engine response time: " + (end - waitEndTime) + "ms");
             logger.info("rtllevel:" + rtl + " request response time: " + (end - this.startTime) + "ms");

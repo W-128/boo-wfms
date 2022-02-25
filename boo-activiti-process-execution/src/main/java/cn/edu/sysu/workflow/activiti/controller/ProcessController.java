@@ -186,7 +186,7 @@ public class ProcessController {
 
     //完成任务
     @RequestMapping(value = "/completeTaskWithTaskId/{taskId}", method = RequestMethod.POST)
-    public ResponseEntity<?> completeTaskWithTaskId(@RequestParam(required = false) Map<String, Object> variables,
+    public ResponseEntity<?> completeTaskWithTaskId(@RequestParam(required = false) Map<String, String> variables,
         @PathVariable(value = "taskId", required = false) String taskId) {
         HashMap<String, String> response = new HashMap<>();
 
@@ -197,9 +197,6 @@ public class ProcessController {
             response.put("status", "fail");
             response.put("message", "required parameters missing: " + CommonUtil.ArrayList2String(missingParams, " "));
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(JSON.toJSONString(response));
-        }
-        for(Map.Entry<String, Object> entry : variables.entrySet()) {
-            variables.put(entry.getKey(), JSON.parseObject((String)entry.getValue(), Object.class));
         }
         logger.info("completeTask");
 
@@ -208,7 +205,7 @@ public class ProcessController {
     }
     //FIFO完成任务
     @RequestMapping(value = "/completeTaskWithFIFOBuffer/{taskId}", method = RequestMethod.POST)
-    public ResponseEntity<?> completeTaskWithFIFOBuffer(@RequestParam(required = false) Map<String, Object> variables,
+    public ResponseEntity<?> completeTaskWithFIFOBuffer(@RequestParam(required = false) Map<String, String> variables,
         @PathVariable(value = "taskId", required = false) String taskId) {
         HashMap<String, String> response = new HashMap<>();
 
@@ -219,9 +216,6 @@ public class ProcessController {
             response.put("status", "fail");
             response.put("message", "required parameters missing: " + CommonUtil.ArrayList2String(missingParams, " "));
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(JSON.toJSONString(response));
-        }
-        for(Map.Entry<String, Object> entry : variables.entrySet()) {
-            variables.put(entry.getKey(), JSON.parseObject((String)entry.getValue(), Object.class));
         }
         logger.info("completeTaskWithFIFOBuffer");
 
@@ -231,7 +225,7 @@ public class ProcessController {
 
     //削峰添谷完成任务
     @RequestMapping(value = "/completeTaskWithDelayWithTaskId/{taskId}", method = RequestMethod.POST)
-    public ResponseEntity<?> completeTaskWithDelayWithTaskId(@RequestParam(required = false) Map<String, Object> variables,
+    public ResponseEntity<?> completeTaskWithDelayWithTaskId(@RequestParam(required = false) Map<String, String> variables,
         @PathVariable(value = "taskId", required = false) String taskId) {
 
         HashMap<String, String> response = new HashMap<>();
@@ -246,9 +240,6 @@ public class ProcessController {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(JSON.toJSONString(response));
         }
 
-        for(Map.Entry<String, Object> entry : variables.entrySet()) {
-            variables.put(entry.getKey(), JSON.parseObject((String) entry.getValue(), Object.class));
-        }
         logger.info("completeTaskWithDelay");
 
         //完成任务

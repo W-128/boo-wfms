@@ -1,5 +1,6 @@
 package cn.edu.sysu.workflow.activiti.util;
 
+import org.springframework.beans.factory.annotation.Value;
 import redis.clients.jedis.JedisPool;
 import redis.clients.jedis.JedisPoolConfig;
 
@@ -13,8 +14,14 @@ public class JedisPoolUtil {
     private JedisPoolUtil() {}
 
     private static volatile JedisPool jedisPool = null;
+
+    @Value("${jedis.redis.host}")
+    public void setRedisHost(String redisHost) {
+        REDIS_HOST = redisHost;
+    }
+
     //服务器ip
-    private static final String REDIS_HOST = "192.168.1.1";
+    private static String REDIS_HOST;
 
     private static final int REDIS_PORT = 6379;
 
