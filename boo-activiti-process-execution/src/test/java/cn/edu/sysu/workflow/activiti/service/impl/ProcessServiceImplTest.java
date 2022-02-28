@@ -48,30 +48,7 @@ public class ProcessServiceImplTest {
     @Qualifier("getProcessService")
     private ProcessServiceImpl processService;
 
-    @Test public void completeTaskWithFIFOBuffer() {
-        HashMap<String, Object> variable = new HashMap<>();
-        variable.put("rtl", 1);
-        for (int i = 0; i < 10; i++) {
-            processService.completeTaskWithFIFOBuffer(i+"", variable);
 
-        }
-        try {
-            Thread.sleep( 10000 );
-        } catch (Exception e){
-            System.exit( 0 ); //退出程序
-        }
-    }
-    @Test public void restTemplateTest(){
-        HashMap<String, Object> variable = new HashMap<>();
-        variable.put("rtl", 1);
-        processService.completeTask("1",variable);
-        processService.completeTaskWithFIFOBuffer("2", variable);
-        try {
-            Thread.sleep( 1000 );
-        } catch (Exception e){
-            System.exit( 0 ); //退出程序
-        }
-    }
 
     @Test public void getProcessInstanceIdAndTaskName() {
         HashMap<String, String> response = new HashMap<>();

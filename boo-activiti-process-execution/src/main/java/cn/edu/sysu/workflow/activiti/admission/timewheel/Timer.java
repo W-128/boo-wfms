@@ -2,7 +2,6 @@ package cn.edu.sysu.workflow.activiti.admission.timewheel;
 
 import com.google.common.util.concurrent.RateLimiter;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
-import org.apache.coyote.http11.filters.VoidInputFilter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -22,7 +21,7 @@ public class Timer {
 
     private static Logger logger = LoggerFactory.getLogger(Timer.class);
 
-    //
+    // 预测长度
     private static final int PREDICT_LENGTH = 15;
     // 时间槽时间长度，单位是毫秒
     private static final int TICK_MS = 1000;
@@ -37,6 +36,20 @@ public class Timer {
 
     //限流器
     private RateLimiter rateLimiter;
+
+    //USE_PREDICT==false 不使用预测
+    //USE_PREDICT==true+alpha==0&&beta==0 全提前
+//    private final boolean USE_PREDICT = true;
+//
+//    private final double alpha = 0.5;
+//    private final double beta = 0.3;
+
+    private final boolean USE_PREDICT = true;
+
+    private final double alpha = 0;
+    private final double beta = 0;
+
+//    private final boolean USE_PREDICT = false;
 
     // 对于一个Timer以及附属的时间轮，都只有一个priorityQueue priorityQueue中存放的是Bucket
     private PriorityBlockingQueue<BucketWithTenantQueue> priorityQueue =
@@ -75,7 +88,8 @@ public class Timer {
         bossThreadPool = Executors.newScheduledThreadPool(1,
             new ThreadFactoryBuilder().setPriority(10).setNameFormat("TimerWheelBoss").build());
 
-        timingWheel = new TimingWheel(TICK_MS, WHEEL_SIZE, System.currentTimeMillis(), priorityQueue, REQUEST_THRESHOLD);
+        timingWheel =
+            new TimingWheel(TICK_MS, WHEEL_SIZE, System.currentTimeMillis(), priorityQueue, REQUEST_THRESHOLD);
         bossThreadPool.scheduleAtFixedRate(() -> {
             TIMER_INSTANCE.advanceClock();
         }, 0, TICK_MS, TimeUnit.MILLISECONDS);
@@ -134,7 +148,7 @@ public class Timer {
         BucketWithTenantQueue bucket = priorityQueue.poll();
         taskList = bucket.removeTaskAndGet(REQUEST_THRESHOLD);
         remainTaskList = bucket.removeTaskAndGet(-1);
-        if (bucket.getTaskNum()!=0){
+        if (bucket.getTaskNum() != 0) {
             logger.warn("到期后时间槽未清空");
         }
         for (TimerTask timerTask : taskList) {
@@ -181,8 +195,10 @@ public class Timer {
     }
 
     public boolean isMove() {
-        double alpha = 0.5;
-        double beta = 0.3;
+        if (USE_PREDICT == false) {
+            return false;
+        }
+        //使用预测
         if (getMaxElementPredictTimeWindow() >= REQUEST_THRESHOLD * alpha
             || getMeanEleMeantPredictTimeWindow() >= REQUEST_THRESHOLD * beta) {
             return true;
