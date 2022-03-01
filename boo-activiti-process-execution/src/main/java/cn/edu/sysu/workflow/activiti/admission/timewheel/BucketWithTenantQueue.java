@@ -1,6 +1,8 @@
 package cn.edu.sysu.workflow.activiti.admission.timewheel;
 
+import com.sun.media.jfxmedia.logging.Logger;
 import javafx.scene.input.InputMethodTextRun;
+import org.slf4j.LoggerFactory;
 
 import javax.xml.ws.EndpointReference;
 import java.util.HashMap;
@@ -17,6 +19,7 @@ import java.util.concurrent.atomic.AtomicLong;
  * @create: 2019/12/12
  **/
 public class BucketWithTenantQueue {
+    private static org.slf4j.Logger logger = LoggerFactory.getLogger(BucketWithTenantQueue.class);
 
     // 当前槽的过期时间
     private AtomicLong expiration = new AtomicLong(-1L);
@@ -80,6 +83,9 @@ public class BucketWithTenantQueue {
      */
     public synchronized List<TimerTask> removeTaskAndGet(int count) {
         List<TimerTask> rtnList = new CopyOnWriteArrayList<>();
+        if (getTaskNum() == 0) {
+            return rtnList;
+        }
         // 全部返回
         if (count == -1) {
             for (CopyOnWriteArrayList<TimerTask> copyOnWriteArrayList : hashMap.values()) {
@@ -106,6 +112,9 @@ public class BucketWithTenantQueue {
             //每个队列取count均值后加总不够count
             if (remainCount != 0) {
                 for (CopyOnWriteArrayList<TimerTask> copyOnWriteArrayList : hashMap.values()) {
+                    if (remainCount <= 0) {
+                        break;
+                    }
                     Iterator<TimerTask> iterator = copyOnWriteArrayList.iterator();
                     while (iterator.hasNext()) {
                         if (remainCount <= 0) {
