@@ -9,12 +9,13 @@ import java.util.HashMap;
  * @create 2022-02-10 18:02
  */
 public class NextTaskArriveTimeIntervalUtil {
-    private static HashMap<String, Integer> nextTaskArriveTimeInterval = new HashMap<>();
 
-    //任务一返回10s,任务二返回0s
-    public  int getNextTaskArriveTimeInterval(String taskName) {
-        return nextTaskArriveTimeInterval.get(taskName);
+    private static HashMap<String, HashMap<String, Integer>> nextTaskArriveTimeInterval = new HashMap<>();
+
+    public int getNextTaskArriveTimeInterval(String processDefinitionId, String taskName) {
+        return nextTaskArriveTimeInterval.get(processDefinitionId).get(taskName);
     }
+
     private static NextTaskArriveTimeIntervalUtil UTIL_INSTANCE;
 
     public static NextTaskArriveTimeIntervalUtil getInstance() {
@@ -28,8 +29,19 @@ public class NextTaskArriveTimeIntervalUtil {
         return UTIL_INSTANCE;
     }
 
-    private NextTaskArriveTimeIntervalUtil(){
-        nextTaskArriveTimeInterval.put("choose goods", 10);
-        nextTaskArriveTimeInterval.put("pay", 0);
+    private NextTaskArriveTimeIntervalUtil() {
+        HashMap<String, Integer> online_shopping_two_task_hashMap = new HashMap<>();
+        online_shopping_two_task_hashMap.put("choose goods", 10);
+        online_shopping_two_task_hashMap.put("pay", 0);
+        nextTaskArriveTimeInterval.put("online-shopping-two-task", online_shopping_two_task_hashMap);
+
+        HashMap<String, Integer> online_shopping_five_task_hashMap = new HashMap<>();
+        online_shopping_five_task_hashMap.put("choose goods", 10);
+        online_shopping_five_task_hashMap.put("pay", 10);
+        online_shopping_five_task_hashMap.put("send goods", 10);
+        online_shopping_five_task_hashMap.put("receive goods", 10);
+        online_shopping_five_task_hashMap.put("commit comments", 0);
+        nextTaskArriveTimeInterval.put("online-shopping-five-task", online_shopping_five_task_hashMap);
+
     }
 }

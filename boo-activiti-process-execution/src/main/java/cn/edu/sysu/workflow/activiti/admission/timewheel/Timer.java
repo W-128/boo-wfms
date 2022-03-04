@@ -28,7 +28,7 @@ public class Timer {
     // 时间槽个数
     private static final int WHEEL_SIZE = 60;
 
-    private static final int REQUEST_THRESHOLD = 50;
+    private static final int REQUEST_THRESHOLD = 40;
 
     private static final int TENANT_SUM = 2;
     // 时间轮
@@ -39,17 +39,17 @@ public class Timer {
 
     //USE_PREDICT==false 不使用预测
     //USE_PREDICT==true+alpha==0&&beta==0 全提前
-//    private final boolean USE_PREDICT = true;
-//
+    //    private final boolean USE_PREDICT = true;
+
 //    private final double alpha = 0.5;
 //    private final double beta = 0.3;
-
-    private final boolean USE_PREDICT = true;
-
-    private final double alpha = 0;
-    private final double beta = 0;
 //
-//    private final boolean USE_PREDICT = false;
+//    private final boolean USE_PREDICT = true;
+
+        private final double alpha = 0;
+        private final double beta = 0;
+
+        private final boolean USE_PREDICT = false;
 
     // 对于一个Timer以及附属的时间轮，都只有一个priorityQueue priorityQueue中存放的是Bucket
     private PriorityBlockingQueue<BucketWithTenantQueue> priorityQueue =
@@ -174,7 +174,7 @@ public class Timer {
             predictTimeWindow[i] = predictTimeWindow[i + 1];
         }
         predictTimeWindow[PREDICT_LENGTH - 1] = 0;
-        //        logger.info("预测时间窗为: " + predictTimeWindowToString());
+        logger.info("预测时间窗为: " + predictTimeWindowToString());
 
     }
 

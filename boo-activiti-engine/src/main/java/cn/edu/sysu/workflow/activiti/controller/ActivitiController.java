@@ -275,7 +275,9 @@ import java.util.Map;
         response.put("status", "success");
         response.put("taskId", taskId);
         response.put("taskName", task.getName());
-        response.put("processInstanceId",task.getProcessInstanceId());
+        response.put("processInstanceId", task.getProcessInstanceId());
+        response.put("processDefinitionId", task.getProcessDefinitionId().split(":")[0]);
+
         logger.info(response.toString());
         return ResponseEntity.status(HttpStatus.OK).body(JSON.toJSONString(response));
     }

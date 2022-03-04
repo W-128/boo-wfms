@@ -135,6 +135,7 @@ import java.util.concurrent.FutureTask;
             result = futureTask.get();
         } catch (Exception e) {
             e.printStackTrace();
+            logger.error(e.toString());
         }
         return result;
     }

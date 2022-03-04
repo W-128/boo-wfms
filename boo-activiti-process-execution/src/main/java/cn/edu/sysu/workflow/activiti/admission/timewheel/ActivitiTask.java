@@ -99,9 +99,15 @@ public class ActivitiTask implements Callable<ResponseEntity<String>> {
             logger.info("rtllevel:" + rtl + " request response time: " + (end - this.startTime) + "ms");
             logger.info("processInstanceId: " + bodys.get("processInstanceId") + " taskName: " + taskName + " start: "
                 + this.startTime + " end: " + end);
-            int nextTaskArriveTime =
-                NextTaskArriveTimeIntervalUtil.getInstance().getNextTaskArriveTimeInterval((taskName)) + rtl;
-            Timer.getInstance().addToPredictTimeWindow(nextTaskArriveTime);
+
+            try {
+                int nextTaskArriveTime = NextTaskArriveTimeIntervalUtil.getInstance()
+                    .getNextTaskArriveTimeInterval(bodys.get("processDefinitionId"), taskName) + rtl;
+                Timer.getInstance().addToPredictTimeWindow(nextTaskArriveTime);
+
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
             return result;
         } else {
             return result;
